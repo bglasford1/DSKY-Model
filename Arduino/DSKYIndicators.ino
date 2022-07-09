@@ -58,7 +58,7 @@ void setup()
 
   // TODO: Set up LCD
   tft.begin();
-  tft.setRotation(0);
+  tft.setRotation(2);
 
   resetDisplay();
   delay(500);
