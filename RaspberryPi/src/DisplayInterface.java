@@ -185,7 +185,10 @@ public class DisplayInterface
         else
         {
           r3sMinus = false;
-          serialInterface.sendDisplayCommand(DisplayCommand.R3S, 0);
+          if (!r3sPlus)
+          {
+            serialInterface.sendDisplayCommand(DisplayCommand.R3S, 0);
+          }
         }
       }
       else if (relayWordValue == 2)
@@ -207,7 +210,10 @@ public class DisplayInterface
         else
         {
           r3sPlus = false;
-          serialInterface.sendDisplayCommand(DisplayCommand.R3S, 0);
+          if (!r3sMinus)
+          {
+            serialInterface.sendDisplayCommand(DisplayCommand.R3S, 0);
+          }
         }
       }
       else if (relayWordValue == 3)
@@ -237,7 +243,10 @@ public class DisplayInterface
         else
         {
           r2sMinus = false;
-          serialInterface.sendDisplayCommand(DisplayCommand.R2S, 0);
+          if (!r2sPlus)
+          {
+            serialInterface.sendDisplayCommand(DisplayCommand.R2S, 0);
+          }
         }
       }
       else if (relayWordValue == 5)
@@ -259,7 +268,10 @@ public class DisplayInterface
         else
         {
           r2sPlus = false;
-          serialInterface.sendDisplayCommand(DisplayCommand.R2S, 0);
+          if (!r2sMinus)
+          {
+            serialInterface.sendDisplayCommand(DisplayCommand.R2S, 0);
+          }
         }
       }
       else if (relayWordValue == 6)
@@ -281,7 +293,10 @@ public class DisplayInterface
         else
         {
           r1sMinus = false;
-          serialInterface.sendDisplayCommand(DisplayCommand.R1S, 0);
+          if (!r1sPlus)
+          {
+            serialInterface.sendDisplayCommand(DisplayCommand.R1S, 0);
+          }
         }
       }
       else if (relayWordValue == 7)
@@ -303,7 +318,10 @@ public class DisplayInterface
         else
         {
           r1sPlus = false;
-          serialInterface.sendDisplayCommand(DisplayCommand.R1S, 0);
+          if (!r1sMinus)
+          {
+            serialInterface.sendDisplayCommand(DisplayCommand.R1S, 0);
+          }
         }
       }
       else if (relayWordValue == 8)
@@ -346,35 +364,48 @@ public class DisplayInterface
         boolean bit8Value = channel10Register.get(8);
         boolean bit9Value = channel10Register.get(9);
 
-        if (bit3Value != indicators.get(3))
+        try
         {
-          indicators.set(3, bit3Value);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.VEL, bit3Value);
+          if (bit3Value != indicators.get(3))
+          {
+            indicators.set(3, bit3Value);
+            serialInterface.sendIndicatorCommand(IndicatorCommand.VEL, bit3Value);
+            Thread.sleep(500);
+          }
+          if (bit4Value != indicators.get(4))
+          {
+            indicators.set(4, bit4Value);
+            serialInterface.sendIndicatorCommand(IndicatorCommand.NO_ATT, bit4Value);
+            Thread.sleep(500);
+          }
+          if (bit5Value != indicators.get(5))
+          {
+            indicators.set(5, bit5Value);
+            serialInterface.sendIndicatorCommand(IndicatorCommand.ALT, bit5Value);
+            Thread.sleep(500);
+          }
+          if (bit6Value != indicators.get(6))
+          {
+            indicators.set(6, bit6Value);
+            serialInterface.sendIndicatorCommand(IndicatorCommand.GIMBAL_LOCK, bit6Value);
+            Thread.sleep(500);
+          }
+          if (bit8Value != indicators.get(8))
+          {
+            indicators.set(8, bit8Value);
+            serialInterface.sendIndicatorCommand(IndicatorCommand.TRACKER, bit8Value);
+            Thread.sleep(500);
+          }
+          if (bit9Value != indicators.get(9))
+          {
+            indicators.set(9, bit9Value);
+            serialInterface.sendIndicatorCommand(IndicatorCommand.PROG, bit9Value);
+            Thread.sleep(500);
+          }
         }
-        else if (bit4Value != indicators.get(4))
+        catch (InterruptedException e)
         {
-          indicators.set(4, bit4Value);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.NO_ATT, bit4Value);
-        }
-        else if (bit5Value != indicators.get(5))
-        {
-          indicators.set(5, bit5Value);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.ALT, bit5Value);
-        }
-        else if (bit6Value != indicators.get(6))
-        {
-          indicators.set(6, bit6Value);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.GIMBAL_LOCK, bit6Value);
-        }
-        else if (bit8Value != indicators.get(8))
-        {
-          indicators.set(8, bit8Value);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.TRACKER, bit8Value);
-        }
-        else if (bit9Value != indicators.get(9))
-        {
-          indicators.set(9, bit9Value);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.PROG, bit9Value);
+          e.printStackTrace();
         }
       }
     }
