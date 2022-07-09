@@ -23,7 +23,7 @@
 #define BLACK 0x0000
 #define WHITE 0xFFFF 
 #define GREY 0x3186
-#define YELLOW 0xFFEB
+#define YELLOW 0xFFE0
 
 #define BOX_WIDTH 156
 #define BOX_HEIGHT 60
