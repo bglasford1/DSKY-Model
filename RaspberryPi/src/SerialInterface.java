@@ -195,34 +195,41 @@ public class SerialInterface
   {
     byte[] commandToSend = null;
 
-    // Convert command to ASCII number.  Note: if value = -1 then send a value of 32 or blank.
+    // If value = -1 then send a value of 66 or 'B'.
+    int convertedValue = 66;
+    if (value != -1)
+    {
+      convertedValue = 48 + value;
+    }
+
+    // Convert command to ASCII number.
     if (command == DisplayCommand.RESET)
     {
       commandToSend = new byte[] { 49 };
     }
     else if (command == DisplayCommand.MD1)
     {
-      commandToSend = new byte[] { 51, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 51, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.MD2)
     {
-      commandToSend = new byte[] { 52, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 52, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.VD1)
     {
-      commandToSend = new byte[] { 53, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 53, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.VD2)
     {
-      commandToSend = new byte[] { 54, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 54, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.ND1)
     {
-      commandToSend = new byte[] { 55, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 55, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.ND2)
     {
-      commandToSend = new byte[] { 56, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 56, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R1S)
     {
@@ -236,23 +243,23 @@ public class SerialInterface
     }
     else if (command == DisplayCommand.R1D1)
     {
-      commandToSend = new byte[] { 49, 48, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 49, 48, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R1D2)
     {
-      commandToSend = new byte[] { 49, 49, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 49, 49, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R1D3)
     {
-      commandToSend = new byte[] { 49, 50, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 49, 50, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R1D4)
     {
-      commandToSend = new byte[] { 49, 51, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 49, 51, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R1D5)
     {
-      commandToSend = new byte[] { 49, 52, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 49, 52, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R2S)
     {
@@ -266,23 +273,23 @@ public class SerialInterface
     }
     else if (command == DisplayCommand.R2D1)
     {
-      commandToSend = new byte[] { 49, 54, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 49, 54, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R2D2)
     {
-      commandToSend = new byte[] { 49, 55, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 49, 55, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R2D3)
     {
-      commandToSend = new byte[] { 49, 56, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 49, 56, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R2D4)
     {
-      commandToSend = new byte[] { 49, 57, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 49, 57, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R2D5)
     {
-      commandToSend = new byte[] { 50, 48, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 50, 48, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R3S)
     {
@@ -296,27 +303,27 @@ public class SerialInterface
     }
     else if (command == DisplayCommand.R3D1)
     {
-      commandToSend = new byte[] { 50, 50, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 50, 50, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R3D2)
     {
-      commandToSend = new byte[] { 50, 51, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 50, 51, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R3D3)
     {
-      commandToSend = new byte[] { 50, 52, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 50, 52, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R3D4)
     {
-      commandToSend = new byte[] { 50, 53, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 50, 53, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.R3D5)
     {
-      commandToSend = new byte[] { 50, 54, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 50, 54, 32, (byte)(convertedValue) };
     }
     else if (command == DisplayCommand.COMP_ACTY)
     {
-      commandToSend = new byte[] { 50, 55, 32, (byte)(48 + value) };
+      commandToSend = new byte[] { 50, 55, 32, (byte)(convertedValue) };
     }
 
     try
@@ -366,6 +373,7 @@ public class SerialInterface
     }
     else if (command == IndicatorCommand.STBY)
     {
+      System.out.println("Setting STBY: value = " + value);
       commandToSend = new byte[] { 53, 32, 0 };
       if (value)
         commandToSend[2] = 49;

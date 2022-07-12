@@ -79,6 +79,16 @@ public class DisplayInterface
       channel10Register.clear(bit);
   }
 
+  public void setChannel10Register(int value)
+  {
+    // Don't process the MSB.  Bit 0 is actually bit 1.
+    for (int i = 14; i >= 0; i--)
+    {
+      boolean nextBit = (value & (1 << i)) != 0;
+      setChannel10Bit(i+1, nextBit);
+    }
+  }
+
   /**
    * Method called to zero out the sign values.
    */

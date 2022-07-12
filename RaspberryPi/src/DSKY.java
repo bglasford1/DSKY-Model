@@ -17,30 +17,56 @@
 */
 public class DSKY
 {
+  public enum Mode
+  {
+    TEST,
+    AGC,
+    SWSIM,
+    HWSIM
+  }
+
   public static void main(String[] args)
   {
-    boolean testMode = true;
     AGCInterface agcInterface = null;
     AGCTestInterface AGCTestInterface = null;
+    SimInterface simInterface = null;
+
+    Mode mode = Mode.HWSIM;
 
     SerialInterface serialInterface = SerialInterface.getInstance();
     serialInterface.initInterface();
 
-    // In test mode the interface to the AGC is via a test interface and not the real AGC.
-    if (testMode)
+    // Input is based on args.  By default run with the hardware simulator.
+    if (args[0].equalsIgnoreCase("--AGC"))
     {
-      AGCTestInterface = new AGCTestInterface();
-      AGCTestInterface.init();
-    }
-    else
-    {
+      mode = Mode.AGC;
       agcInterface = new AGCInterface();
       agcInterface.init();
     }
+    else if (args[0].equalsIgnoreCase("--AGC-TEST"))
+    {
+      mode = Mode.TEST;
+      AGCTestInterface = new AGCTestInterface();
+      AGCTestInterface.init();
+    }
+    else if (args[0].equalsIgnoreCase("--AGC-SWSIM"))
+    {
+      mode = Mode.SWSIM;
+      // TODO: Start up Ron's simulator
+      simInterface = new SimInterface();
+      simInterface.initInterface();
+      simInterface.start();
+    }
+    else // Run with hardware simulator.
+    {
+      mode = Mode.HWSIM;
+      // TODO: Start up my simulator
+      simInterface = new SimInterface();
+      simInterface.initInterface();
+      simInterface.start();
+    }
 
     KeyboardInterface keyboardInterface = KeyboardInterface.getInstance();
-
-    // TODO: Add code here to check for pulse on CLK1 pin, if not then start simulator.
 
     // This call hangs waiting for keyboard input.
     try
@@ -48,14 +74,17 @@ public class DSKY
       while (true)
       {
         int keyCode = keyboardInterface.readData();
-        System.out.println("Received Key Code: " + keyCode);
-        if (testMode)
+        if (mode == Mode.TEST)
         {
           AGCTestInterface.assertKbStr();
         }
-        else
+        else if (mode == Mode.AGC)
         {
           agcInterface.assertKbStr();
+        }
+        else
+        {
+          simInterface.sendKeyCode(keyCode);
         }
       }
     }

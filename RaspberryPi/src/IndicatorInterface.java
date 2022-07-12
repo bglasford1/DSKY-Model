@@ -68,6 +68,62 @@ public class IndicatorInterface
   }
 
   /**
+   * Method called to light the VEL indicator.
+   */
+  public void setVel(boolean value)
+  {
+    serialInterface.sendIndicatorCommand(IndicatorCommand.VEL, value);
+  }
+
+  /**
+   * Method called to light the ALT indicator.
+   */
+  public void setAlt(boolean value)
+  {
+    serialInterface.sendIndicatorCommand(IndicatorCommand.ALT, value);
+  }
+
+  /**
+   * Method called to light the NO ATT indicator.
+   */
+  public void setNoAtt(boolean value)
+  {
+    serialInterface.sendIndicatorCommand(IndicatorCommand.NO_ATT, value);
+  }
+
+  /**
+   * Method called to light the GIMBAL LOCK indicator.
+   */
+  public void setGimbalLock(boolean value)
+  {
+    serialInterface.sendIndicatorCommand(IndicatorCommand.GIMBAL_LOCK, value);
+  }
+
+  /**
+   * Method called to light the Tracker indicator.
+   */
+  public void setTracker(boolean value)
+  {
+    serialInterface.sendIndicatorCommand(IndicatorCommand.TRACKER, value);
+  }
+
+  /**
+   * Method called to light the PROG indicator.
+   */
+  public void setProg(boolean value)
+  {
+    serialInterface.sendIndicatorCommand(IndicatorCommand.PROG, value);
+  }
+
+  /**
+   * Method called to light the RESTART indicator.
+   */
+  public void setRestart(boolean value)
+  {
+    serialInterface.sendIndicatorCommand(IndicatorCommand.RESTART, value);
+  }
+
+  /**
    * Method called to set/clear a bit of the channel 11 register.
    *
    * @param bit The bit to set/clear.
