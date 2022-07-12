@@ -167,7 +167,7 @@ void setup()
  * Raspberry Pi, then executes the command before waiting for the next command.  Each of the
  * commands are followed by a single digit numeric value except for the three sign commands.  
  * The sign command values are 0 = blank, 1 = minus and 2 = plus.  The COMP ACTY is followed 
- * by 0 = off or 1 = on.  The remaining commands are followed by 0-9 or -1 for blank.  
+ * by 0 = off or 1 = on.  The remaining commands are followed by 0-9 or B for blank.  
  * The commands are:
  * 
  * 0  = Noop
@@ -467,7 +467,7 @@ void displayCompActy(bool state)
  void displayCharacter(String number, int x, int y)
  {
   // Display based on character to display.
-  if (number.equals("-1"))
+  if (number.equals("B"))
   {
     drawSegmentA(x, y, BLACK);
     drawSegmentB(x, y, BLACK);
