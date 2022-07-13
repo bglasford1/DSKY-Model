@@ -32,6 +32,11 @@ public class SerialInterface
   private SerialPort indicatorsPort = null;
   private SerialPort displayPort = null;
 
+  private int vd1 = 0;
+  private int vd2 = 0;
+  private int nd1 = 0;
+  private int nd2 = 0;
+
   private SerialInterface() { }
 
   public static SerialInterface getInstance()
@@ -218,18 +223,22 @@ public class SerialInterface
     else if (command == DisplayCommand.VD1)
     {
       commandToSend = new byte[] { 53, 32, (byte)(convertedValue) };
+      vd1 = convertedValue;
     }
     else if (command == DisplayCommand.VD2)
     {
       commandToSend = new byte[] { 54, 32, (byte)(convertedValue) };
+      vd2 = convertedValue;
     }
     else if (command == DisplayCommand.ND1)
     {
       commandToSend = new byte[] { 55, 32, (byte)(convertedValue) };
+      nd1 = convertedValue;
     }
     else if (command == DisplayCommand.ND2)
     {
       commandToSend = new byte[] { 56, 32, (byte)(convertedValue) };
+      nd2 = convertedValue;
     }
     else if (command == DisplayCommand.R1S)
     {
@@ -373,7 +382,6 @@ public class SerialInterface
     }
     else if (command == IndicatorCommand.STBY)
     {
-      System.out.println("Setting STBY: value = " + value);
       commandToSend = new byte[] { 53, 32, 0 };
       if (value)
         commandToSend[2] = 49;
@@ -453,18 +461,7 @@ public class SerialInterface
         commandToSend[3] = 48;
     }
 
-    try
-    {
-      if (commandToSend != null)
-      {
-        indicatorsPort.writeBytes(commandToSend, commandToSend.length);
-        Thread.sleep(60);
-      }
-    }
-    catch (InterruptedException e)
-    {
-      e.printStackTrace();
-    }
+    sendCommand(commandToSend);
   }
 
   /**
@@ -474,7 +471,49 @@ public class SerialInterface
    */
   public void flashVerbNoun(boolean state)
   {
-    // TODO: implement
+    byte[] commandToSend;
+    if (state)
+    {
+      System.out.println("Flash V/N: Turn on........");
+      // Set the four digits to saved values.
+      commandToSend = new byte[] { 53, 32, (byte)vd1 };
+      sendCommand(commandToSend);
+      commandToSend = new byte[] { 54, 32, (byte)vd2 };
+      sendCommand(commandToSend);
+      commandToSend = new byte[] { 55, 32, (byte)nd1 };
+      sendCommand(commandToSend);
+      commandToSend = new byte[] { 56, 32, (byte)nd2 };
+      sendCommand(commandToSend);
+    }
+    else
+    {
+      System.out.println("Flash V/N: Turn off........");
+      // Blank the four digits.
+      commandToSend = new byte[] { 53, 32, 66 };
+      sendCommand(commandToSend);
+      commandToSend = new byte[] { 54, 32, 66 };
+      sendCommand(commandToSend);
+      commandToSend = new byte[] { 55, 32, 66 };
+      sendCommand(commandToSend);
+      commandToSend = new byte[] { 56, 32, 66 };
+      sendCommand(commandToSend);
+    }
+  }
+
+  private void sendCommand(byte[] command)
+  {
+    try
+    {
+      if (command != null)
+      {
+        indicatorsPort.writeBytes(command, command.length);
+        Thread.sleep(60);
+      }
+    }
+    catch (InterruptedException e)
+    {
+      e.printStackTrace();
+    }
   }
 
   /**

@@ -380,37 +380,37 @@ public class DisplayInterface
           {
             indicators.set(3, bit3Value);
             serialInterface.sendIndicatorCommand(IndicatorCommand.VEL, bit3Value);
-            Thread.sleep(500);
+            Thread.sleep(100);
           }
           if (bit4Value != indicators.get(4))
           {
             indicators.set(4, bit4Value);
             serialInterface.sendIndicatorCommand(IndicatorCommand.NO_ATT, bit4Value);
-            Thread.sleep(500);
+            Thread.sleep(100);
           }
           if (bit5Value != indicators.get(5))
           {
             indicators.set(5, bit5Value);
             serialInterface.sendIndicatorCommand(IndicatorCommand.ALT, bit5Value);
-            Thread.sleep(500);
+            Thread.sleep(100);
           }
           if (bit6Value != indicators.get(6))
           {
             indicators.set(6, bit6Value);
             serialInterface.sendIndicatorCommand(IndicatorCommand.GIMBAL_LOCK, bit6Value);
-            Thread.sleep(500);
+            Thread.sleep(100);
           }
           if (bit8Value != indicators.get(8))
           {
             indicators.set(8, bit8Value);
             serialInterface.sendIndicatorCommand(IndicatorCommand.TRACKER, bit8Value);
-            Thread.sleep(500);
+            Thread.sleep(100);
           }
           if (bit9Value != indicators.get(9))
           {
             indicators.set(9, bit9Value);
             serialInterface.sendIndicatorCommand(IndicatorCommand.PROG, bit9Value);
-            Thread.sleep(500);
+            Thread.sleep(100);
           }
         }
         catch (InterruptedException e)

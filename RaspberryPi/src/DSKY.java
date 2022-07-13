@@ -52,7 +52,6 @@ public class DSKY
     else if (args[0].equalsIgnoreCase("--AGC-SWSIM"))
     {
       mode = Mode.SWSIM;
-      // TODO: Start up Ron's simulator
       simInterface = new SimInterface();
       simInterface.initInterface();
       simInterface.start();
@@ -60,7 +59,6 @@ public class DSKY
     else // Run with hardware simulator.
     {
       mode = Mode.HWSIM;
-      // TODO: Start up my simulator
       simInterface = new SimInterface();
       simInterface.initInterface();
       simInterface.start();
@@ -91,6 +89,11 @@ public class DSKY
     catch (Exception e)
     {
       System.out.println(e.getMessage());
+    }
+
+    if (simInterface != null)
+    {
+      simInterface.closeInterface();
     }
   }
 }

@@ -75,7 +75,6 @@ public class SocketClient
     }
     catch (IOException e)
     {
-      e.printStackTrace();
       return null;
     }
   }
