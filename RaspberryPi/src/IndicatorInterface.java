@@ -22,8 +22,28 @@ public class IndicatorInterface
 
   private final SerialInterface serialInterface;
 
-  private final BitSet channel11Register = new BitSet(15);
-  private boolean paralm = false;
+  private final BitSet displayIndicatorBits = new BitSet(6);
+  private final BitSet otherIndicatorBits = new BitSet(6);
+
+  private enum displayIndicators
+  {
+    NO_ATT,
+    GIMBAL_LOCK,
+    PROG,
+    TRACKER,
+    ALT,
+    VEL
+  }
+
+  private enum otherIndicators
+  {
+    UPLINK_ACTY,
+    KEY_REL,
+    OPR_ERR,
+    TEMP,
+    STBY,
+    RESTART
+  }
 
   public static IndicatorInterface getInstance()
   {
@@ -40,9 +60,30 @@ public class IndicatorInterface
    */
   public void resetDisplay()
   {
-    serialInterface.sendIndicatorCommand(IndicatorCommand.RESET, false);
-    channel11Register.clear();
-    paralm = false;
+    serialInterface.sendDisplayIndicatorsCommand(0);
+    serialInterface.sendOtherIndicatorsCommand(0);
+    displayIndicatorBits.clear();
+    otherIndicatorBits.clear();
+  }
+
+  /**
+   * Method called to flash the verb/noun by turning the values on/off.
+   *
+   * @param value Whether to turn them on or off.
+   */
+  public void setFlashVerbNoun(boolean value)
+  {
+    serialInterface.flashVerbNoun(value);
+  }
+
+  /**
+   * Method called to turn on/off the COMP ACTY indicator.
+   *
+   * @param value Whether to turn it on or off.
+   */
+  public void setCompActy(boolean value)
+  {
+    serialInterface.sendDisplayCommand(DisplayCommand.COMP_ACTY, value ? 1 : 0);
   }
 
   /**
@@ -52,10 +93,28 @@ public class IndicatorInterface
    */
   public void setParalm(boolean value)
   {
-    if (value != paralm)
+    if (value)
     {
-      paralm = value;
-      serialInterface.sendIndicatorCommand(IndicatorCommand.RESTART, value);
+      otherIndicatorBits.set(otherIndicators.RESTART.ordinal());
+    }
+    else
+    {
+      otherIndicatorBits.clear(otherIndicators.RESTART.ordinal());
+    }
+  }
+
+  /**
+   * Method called to light the RESTART indicator.
+   */
+  public void setRestart(boolean value)
+  {
+    if (value)
+    {
+      otherIndicatorBits.set(otherIndicators.RESTART.ordinal());
+    }
+    else
+    {
+      otherIndicatorBits.clear(otherIndicators.RESTART.ordinal());
     }
   }
 
@@ -64,7 +123,79 @@ public class IndicatorInterface
    */
   public void setStandby(boolean value)
   {
-    serialInterface.sendIndicatorCommand(IndicatorCommand.STBY, value);
+    if (value)
+    {
+      otherIndicatorBits.set(otherIndicators.STBY.ordinal());
+    }
+    else
+    {
+      otherIndicatorBits.clear(otherIndicators.STBY.ordinal());
+    }
+  }
+
+  /**
+   * Method called to light the UPLINK ACTY indicator.
+   */
+  public void setUplinkActy(boolean value)
+  {
+    if (value)
+    {
+      otherIndicatorBits.set(otherIndicators.UPLINK_ACTY.ordinal());
+    }
+    else
+    {
+      otherIndicatorBits.clear(otherIndicators.UPLINK_ACTY.ordinal());
+    }
+  }
+
+  /**
+   * Method called to light the KEY REL indicator.
+   */
+  public void setKeyRel(boolean value)
+  {
+    if (value)
+    {
+      otherIndicatorBits.set(otherIndicators.KEY_REL.ordinal());
+    }
+    else
+    {
+      otherIndicatorBits.clear(otherIndicators.KEY_REL.ordinal());
+    }
+  }
+
+  /**
+   * Method called to light the OPR ERR indicator.
+   */
+  public void setOprErr(boolean value)
+  {
+    if (value)
+    {
+      otherIndicatorBits.set(otherIndicators.OPR_ERR.ordinal());
+    }
+    else
+    {
+      otherIndicatorBits.clear(otherIndicators.OPR_ERR.ordinal());
+    }
+  }
+
+  /**
+   * Method called to light the TEMP indicator.
+   */
+  public void setTemp(boolean value)
+  {
+    if (value)
+    {
+      otherIndicatorBits.set(otherIndicators.TEMP.ordinal());
+    }
+    else
+    {
+      otherIndicatorBits.clear(otherIndicators.TEMP.ordinal());
+    }
+  }
+
+  public void sendOtherIndidatorsCommand()
+  {
+    serialInterface.sendOtherIndicatorsCommand(Utils.toInt(otherIndicatorBits));
   }
 
   /**
@@ -72,7 +203,14 @@ public class IndicatorInterface
    */
   public void setVel(boolean value)
   {
-    serialInterface.sendIndicatorCommand(IndicatorCommand.VEL, value);
+    if (value)
+    {
+      displayIndicatorBits.set(displayIndicators.VEL.ordinal());
+    }
+    else
+    {
+      displayIndicatorBits.clear(displayIndicators.VEL.ordinal());
+    }
   }
 
   /**
@@ -80,7 +218,14 @@ public class IndicatorInterface
    */
   public void setAlt(boolean value)
   {
-    serialInterface.sendIndicatorCommand(IndicatorCommand.ALT, value);
+    if (value)
+    {
+      displayIndicatorBits.set(displayIndicators.ALT.ordinal());
+    }
+    else
+    {
+      displayIndicatorBits.clear(displayIndicators.ALT.ordinal());
+    }
   }
 
   /**
@@ -88,7 +233,14 @@ public class IndicatorInterface
    */
   public void setNoAtt(boolean value)
   {
-    serialInterface.sendIndicatorCommand(IndicatorCommand.NO_ATT, value);
+    if (value)
+    {
+      displayIndicatorBits.set(displayIndicators.NO_ATT.ordinal());
+    }
+    else
+    {
+      displayIndicatorBits.clear(displayIndicators.NO_ATT.ordinal());
+    }
   }
 
   /**
@@ -96,7 +248,14 @@ public class IndicatorInterface
    */
   public void setGimbalLock(boolean value)
   {
-    serialInterface.sendIndicatorCommand(IndicatorCommand.GIMBAL_LOCK, value);
+    if (value)
+    {
+      displayIndicatorBits.set(displayIndicators.GIMBAL_LOCK.ordinal());
+    }
+    else
+    {
+      displayIndicatorBits.clear(displayIndicators.GIMBAL_LOCK.ordinal());
+    }
   }
 
   /**
@@ -104,7 +263,14 @@ public class IndicatorInterface
    */
   public void setTracker(boolean value)
   {
-    serialInterface.sendIndicatorCommand(IndicatorCommand.TRACKER, value);
+    if (value)
+    {
+      displayIndicatorBits.set(displayIndicators.TRACKER.ordinal());
+    }
+    else
+    {
+      displayIndicatorBits.clear(displayIndicators.TRACKER.ordinal());
+    }
   }
 
   /**
@@ -112,120 +278,18 @@ public class IndicatorInterface
    */
   public void setProg(boolean value)
   {
-    serialInterface.sendIndicatorCommand(IndicatorCommand.PROG, value);
+    if (value)
+    {
+      displayIndicatorBits.set(displayIndicators.PROG.ordinal());
+    }
+    else
+    {
+      displayIndicatorBits.clear(displayIndicators.PROG.ordinal());
+    }
   }
 
-  /**
-   * Method called to light the RESTART indicator.
-   */
-  public void setRestart(boolean value)
+  public void sendDisplayIndicatorsCommand()
   {
-    serialInterface.sendIndicatorCommand(IndicatorCommand.RESTART, value);
-  }
-
-  /**
-   * Method called to set/clear a bit of the channel 11 register.
-   *
-   * @param bit The bit to set/clear.
-   * @param value The value of the bit.
-   */
-  public void setChannel11Bit(int bit, boolean value)
-  {
-    if (bit == 2)
-    {
-      if (value != channel11Register.get(bit))
-      {
-        if (value)
-        {
-          channel11Register.set(bit);
-          serialInterface.sendDisplayCommand(DisplayCommand.COMP_ACTY, 1);
-        }
-        else
-        {
-          channel11Register.clear(bit);
-          serialInterface.sendDisplayCommand(DisplayCommand.COMP_ACTY, 0);
-        }
-      }
-    }
-    else if (bit == 3)
-    {
-      if (value != channel11Register.get(bit))
-      {
-        if (value)
-        {
-          channel11Register.set(bit);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.UPLINK_ACTY, true);
-        }
-        else
-        {
-          channel11Register.clear(bit);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.UPLINK_ACTY, false);
-        }
-      }
-    }
-    else if (bit == 4)
-    {
-      if (value != channel11Register.get(bit))
-      {
-        if (value)
-        {
-          channel11Register.set(bit);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.TEMP, true);
-        }
-        else
-        {
-          channel11Register.clear(bit);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.TEMP, false);
-        }
-      }
-    }
-    else if (bit == 5)
-    {
-      if (value != channel11Register.get(bit))
-      {
-        if (value)
-        {
-          channel11Register.set(bit);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.KEY_REL, true);
-        }
-        else
-        {
-          channel11Register.clear(bit);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.KEY_REL, false);
-        }
-      }
-    }
-    else if (bit == 6)
-    {
-      if (value != channel11Register.get(bit))
-      {
-        if (value)
-        {
-          channel11Register.set(bit);
-          serialInterface.flashVerbNoun(true);
-        }
-        else
-        {
-          channel11Register.clear(bit);
-          serialInterface.flashVerbNoun(false);
-        }
-      }
-    }
-    else if (bit == 7)
-    {
-      if (value != channel11Register.get(bit))
-      {
-        if (value)
-        {
-          channel11Register.set(bit);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.OPR_ERR, true);
-        }
-        else
-        {
-          channel11Register.clear(bit);
-          serialInterface.sendIndicatorCommand(IndicatorCommand.OPR_ERR, false);
-        }
-      }
-    }
+    serialInterface.sendDisplayIndicatorsCommand(Utils.toInt(displayIndicatorBits));
   }
 }

@@ -20,15 +20,6 @@ public class AGCTestInterface
   private final IndicatorInterface indicatorInterface = IndicatorInterface.getInstance();
   private final KeyboardInterface keyboardInterface = KeyboardInterface.getInstance();
 
-  private void resetChannel10()
-  {
-    // Initialize all channel 10 bits to RLYWD = 12, everything off.
-    setDSPL(false, false, false, false, false);
-    setDSPH(false, false, false, false, false);
-    displayInterface.setChannel10Bit(11, false);
-    setRLWD(false, false, true, true);
-  }
-
   /**
    * This method first sets all numbers to "8", then exercises all the sign characters,
    * then sets R1 to 0 and counts up to 9, then toggles on/off all the indicators, then
@@ -37,464 +28,270 @@ public class AGCTestInterface
    */
   public void init()
   {
-    try
-    {
-      // ---------------- Set all characters to "8" -------------------
-      setDSPL(true, false, true, true, true);
-      setDSPH(true, false, true, true, true);
-      displayInterface.setChannel10Bit(11, false);
+    long startTime = System.currentTimeMillis();
 
-      // MD1/MD2
-      setRLWD(true, true, false, true);
-      displayInterface.decodeData();
+    // ---------------- Set all characters to "8" -------------------
+    // MD1/MD2
+    displayInterface.setChannel10Register(0x5BBD); // 101 1011 1011 1101
+    displayInterface.decodeData();
 
-      // VD1/VD2
-      setRLWD(false, true, false, true);
-      displayInterface.decodeData();
+    // VD1/VD2
+    displayInterface.setChannel10Register(0x53BD); // 101 0011 1011 1101
+    displayInterface.decodeData();
 
-      // ND1/ND2
-      setRLWD(true, false, false, true);
-      displayInterface.decodeData();
+    // ND1/ND2
+    displayInterface.setChannel10Register(0x4BBD); // 100 1011 1011 1101
+    displayInterface.decodeData();
 
-      // R1D1
-      setRLWD(false, false, false, true);
-      displayInterface.decodeData();
+    // R1D1
+    displayInterface.setChannel10Register(0x43BD); // 100 0011 1011 1101
+    displayInterface.decodeData();
 
-      // R1D2/R1D3
-      setRLWD(true, true, true, false);
-      displayInterface.decodeData();
+    // R1D2/R1D3
+    displayInterface.setChannel10Register(0x3BBD); // 011 1011 1011 1101
+    displayInterface.decodeData();
 
-      // R1D4/R1D5
-      setRLWD(false, true, true, false);
-      displayInterface.decodeData();
+    // R1D4/R1D5
+    displayInterface.setChannel10Register(0x33BD); // 011 0011 1011 1101
+    displayInterface.decodeData();
 
-      // R2D1/R2D2
-      setRLWD(true, false, true, false);
-      displayInterface.decodeData();
+    // R2D1/R2D2
+    displayInterface.setChannel10Register(0x2BBD); // 010 1011 1011 1101
+    displayInterface.decodeData();
 
-      // R2D3/R2D4
-      setRLWD(false, false, true, false);
-      displayInterface.decodeData();
+    // R2D3/R2D4
+    displayInterface.setChannel10Register(0x23BD); // 010 0011 1011 1101
+    displayInterface.decodeData();
 
-      // R2D5/R3D1
-      setRLWD(true, true, false, false);
-      displayInterface.decodeData();
+    // R2D5/R3D1
+    displayInterface.setChannel10Register(0x1BBD); // 001 1011 1011 1101
+    displayInterface.decodeData();
 
-      // R3D2/R3D3
-      setRLWD(false, true, false, false);
-      displayInterface.decodeData();
+    // R3D2/R3D3
+    displayInterface.setChannel10Register(0x13BD); // 001 0011 1011 1101
+    displayInterface.decodeData();
 
-      // R3D4/R3D5
-      setRLWD(true, false, false, false);
-      displayInterface.decodeData();
+    // R3D4/R3D5
+    displayInterface.setChannel10Register(0x0BBD); // 000 1011 1011 1101
+    displayInterface.decodeData();
+
+    long endTime = System.currentTimeMillis();
+    System.out.println("Time to Draw Display = " + (endTime - startTime));
 
       // -------------- Put the +/- signs through their paces -----------------
       // R1D2/R1D3/+R1S
-      resetChannel10();
       displayInterface.resetSigns();
-      displayInterface.setChannel10Bit(11, true);
-      setRLWD(true, true, true, false);
+      displayInterface.setChannel10Register(0x3FBD); // 011 1111 1011 1101
       displayInterface.decodeData();
-      Thread.sleep(500);
 
       // R2D1/R2D2/+R2S
-      setRLWD(true, false, true, false);
+      displayInterface.setChannel10Register(0x2FBD); // 010 1111 1011 1101
       displayInterface.decodeData();
-      Thread.sleep(500);
 
       // R3D2/R3D3/+R3S
-      setRLWD(false, true, false, false);
+      displayInterface.setChannel10Register(0x17BD); // 001 0111 1011 1101
       displayInterface.decodeData();
-      Thread.sleep(500);
 
       // R1D2/R1D3/+R1S
-      displayInterface.setChannel10Bit(11, false);
-      setRLWD(true, true, true, false);
+      displayInterface.setChannel10Register(0x3BBD); // 011 1011 1011 1101
       displayInterface.decodeData();
 
       // R2D1/R2D2/+R2S
-      setRLWD(true, false, true, false);
+      displayInterface.setChannel10Register(0x2BBD); // 010 1011 1011 1101
       displayInterface.decodeData();
 
       // R3D2/R3D3/+R3S
-      setRLWD(false, true, false, false);
+      displayInterface.setChannel10Register(0x13BD); // 001 0011 1011 1101
       displayInterface.decodeData();
 
       // R1D4/R1D5/-R1S
-      displayInterface.setChannel10Bit(11, true);
-      setRLWD(false, true, true, false);
+      displayInterface.setChannel10Register(0x37BD); // 011 0111 1011 1101
       displayInterface.decodeData();
-      Thread.sleep(500);
 
       // R2D3/R2D4/-R2S
-      setRLWD(false, false, true, false);
+      displayInterface.setChannel10Register(0x27BD); // 010 0111 1011 1101
       displayInterface.decodeData();
-      Thread.sleep(500);
 
       // R3D4/R3D5/-R3S
-      setRLWD(true, false, false, false);
+      displayInterface.setChannel10Register(0x0FBD); // 000 1111 1011 1101
       displayInterface.decodeData();
-      Thread.sleep(500);
 
       // R1D4/R1D5/-R1S
-      displayInterface.setChannel10Bit(11, false);
-      setRLWD(false, true, true, false);
+      displayInterface.setChannel10Register(0x33BD); // 011 0011 1011 1101
       displayInterface.decodeData();
 
       // R2D3/R2D4/-R2S
-      setRLWD(false, false, true, false);
+      displayInterface.setChannel10Register(0x23BD); // 010 0011 1011 1101
       displayInterface.decodeData();
 
       // R3D4/R3D5/-R3S
-      setRLWD(true, false, false, false);
+      displayInterface.setChannel10Register(0x0BBD); // 000 1011 1011 1101
       displayInterface.decodeData();
 
+//      // ---------------- Make R1 count from 0-9 -------------------
+//      // Set R1 to all zeros.
+//      // R1D1
+//      displayInterface.setChannel10Register(0x42B5); // 100 0010 1011 0101
+//      displayInterface.decodeData();
+//
+//      // R1D2/R1D3
+//      displayInterface.setChannel10Register(0x3AB5); // 011 1010 1011 0101
+//      displayInterface.decodeData();
+//
+//      // R1D4/R1D5
+//      displayInterface.setChannel10Register(0x32B5); // 011 0010 1011 0101
+//      displayInterface.decodeData();
+//
+//      // Increment R1R5 at one second intervals.
+//      for (int i = 1; i < 10; i++)
+//      {
+//        if (i == 1)
+//        {
+//          displayInterface.setChannel10Register(0x32A3); // 011 0010 1010 0011
+//          displayInterface.decodeData();
+//        }
+//        else if (i == 2)
+//        {
+//          displayInterface.setChannel10Register(0x32B9); // 011 0010 1011 1001
+//          displayInterface.decodeData();
+//        }
+//        else if (i == 3)
+//        {
+//          displayInterface.setChannel10Register(0x32BB); // 011 0010 1011 1011
+//          displayInterface.decodeData();
+//        }
+//        else if (i == 4)
+//        {
+//          displayInterface.setChannel10Register(0x32AF); // 011 0010 1010 1111
+//          displayInterface.decodeData();
+//        }
+//        else if (i == 5)
+//        {
+//          displayInterface.setChannel10Register(0x32BE); // 011 0010 1011 1110
+//          displayInterface.decodeData();
+//        }
+//        else if (i == 6)
+//        {
+//          displayInterface.setChannel10Register(0x32BC); // 011 0010 1011 1100
+//          displayInterface.decodeData();
+//        }
+//        else if (i == 7)
+//        {
+//          displayInterface.setChannel10Register(0x32B3); // 011 0010 1011 0011
+//          displayInterface.decodeData();
+//        }
+//        else if (i == 8)
+//        {
+//          displayInterface.setChannel10Register(0x32BD); // 011 0010 1011 1101
+//          displayInterface.decodeData();
+//        }
+//        else  // i == 9
+//        {
+//          displayInterface.setChannel10Register(0x32BF); // 011 0010 1011 1111
+//          displayInterface.decodeData();
+//        }
+//        Thread.sleep(1000);
+//      }
 
-      // ---------------- Make R1 count from 0-9 -------------------
-      // Set R1 to all zeros.
-      setDSPL(true, false, true, false, true);
-      setDSPH(true, false, true, false, true);
-      displayInterface.setChannel10Bit(11, false);
+    // ---------------Toggle all the indicators --------------
+    // Set NO ATT, GIMBAL LOCK, PROG, TRACKER, ALT, VEL
+    indicatorInterface.setNoAtt(true);
+    indicatorInterface.setGimbalLock(true);
+    indicatorInterface.setProg(true);
+    indicatorInterface.setTracker(true);
+    indicatorInterface.setAlt(true);
+    indicatorInterface.setVel(true);
+    indicatorInterface.sendDisplayIndicatorsCommand();
 
-      // R1D1
-      setRLWD(false, false, false, true);
-      displayInterface.decodeData();
+    // Set UPLINK ACTY, KEY REL, OPR ERR, TEMP, STBY, RESTART
+    indicatorInterface.setUplinkActy(true);
+    indicatorInterface.setStandby(true);
+    indicatorInterface.setKeyRel(true);
+    indicatorInterface.setOprErr(true);
+    indicatorInterface.setTemp(true);
+    indicatorInterface.setParalm(true);
+    indicatorInterface.sendOtherIndidatorsCommand();
 
-      // R1D2/R1D3
-      setRLWD(true, true, true, false);
-      displayInterface.setChannel10Bit(15, false);
-      displayInterface.decodeData();
+    // Set COMP ACTY
+    indicatorInterface.setCompActy(true);
 
-      // R1D4/R1D5
-      setRLWD(false, true, true, false);
-      displayInterface.decodeData();
+    // Clear NO ATT, GIMBAL LOCK, PROG, TRACKER, ALT, VEL
+    indicatorInterface.setNoAtt(false);
+    indicatorInterface.setGimbalLock(false);
+    indicatorInterface.setProg(false);
+    indicatorInterface.setTracker(false);
+    indicatorInterface.setAlt(false);
+    indicatorInterface.setVel(false);
+    indicatorInterface.sendDisplayIndicatorsCommand();
 
-      // Incrementing R1 at one second intervals.
-      for (int i = 1; i < 10; i++)
-      {
-        if (i == 1)
-        {
-          setDSPL(true, true, false, false, false);
-          setDSPH(true, false, true, false, true);
-          displayInterface.setChannel10Bit(11, false);
+    // Clear UPLINK ACTY, STBY, KEY REL, OPR ERR, TEMP, RESTART
+    indicatorInterface.setUplinkActy(false);
+    indicatorInterface.setStandby(false);
+    indicatorInterface.setKeyRel(false);
+    indicatorInterface.setOprErr(false);
+    indicatorInterface.setTemp(false);
+    indicatorInterface.setParalm(false);
+    indicatorInterface.sendOtherIndidatorsCommand();
 
-          // R1D4/R1D5
-          setRLWD(false, true, true, false);
-          displayInterface.decodeData();
-        }
-        else if (i == 2)
-        {
-          setDSPL(true, false, false, true, true);
-          setDSPH(true, false, true, false, true);
-          displayInterface.setChannel10Bit(11, false);
+    // Clear COMP ACTY
+    indicatorInterface.setCompActy(false);
 
-          // R1D4/R1D5
-          setRLWD(false, true, true, false);
-          displayInterface.decodeData();
-        }
-        else if (i == 3)
-        {
-          setDSPL(true, true, false, true, true);
-          setDSPH(true, false, true, false, true);
-          displayInterface.setChannel10Bit(11, false);
+    // -------------- Set indicators and display to the NASA image. -------------------
+    // Set KEY REL, TEMP
+    indicatorInterface.setKeyRel(true);
+    indicatorInterface.setTemp(true);
+    indicatorInterface.sendOtherIndidatorsCommand();
 
-          // R1D4/R1D5
-          setRLWD(false, true, true, false);
-          displayInterface.decodeData();
-        }
-        else if (i == 4)
-        {
-          setDSPL(true, true, true, true, false);
-          setDSPH(true, false, true, false, true);
-          displayInterface.setChannel10Bit(11, false);
+    // Set NO ATT, PROG, VEL
+    indicatorInterface.setNoAtt(true);
+    indicatorInterface.setProg(true);
+    indicatorInterface.setVel(true);
+    indicatorInterface.sendDisplayIndicatorsCommand();
 
-          // R1D4/R1D5
-          setRLWD(false, true, true, false);
-          displayInterface.decodeData();
-        }
-        else if (i == 5)
-        {
-          setDSPL(false, true, true, true, true);
-          setDSPH(true, false, true, false, true);
-          displayInterface.setChannel10Bit(11, false);
+    // ---------------- Set display characters -------------------
+    // MD1/MD2 "00"
+    displayInterface.setChannel10Register(0x5AB5); // 101 1010 1011 0101
+    displayInterface.decodeData();
 
-          // R1D4/R1D5
-          setRLWD(false, true, true, false);
-          displayInterface.decodeData();
-        }
-        else if (i == 6)
-        {
-          setDSPL(false, false, true, true, true);
-          setDSPH(true, false, true, false, true);
-          displayInterface.setChannel10Bit(11, false);
+    // VD1/VD2 "06"
+    displayInterface.setChannel10Register(0x52BC); // 101 0010 1011 1100
+    displayInterface.decodeData();
 
-          // R1D4/R1D5
-          setRLWD(false, true, true, false);
-          displayInterface.decodeData();
-        }
-        else if (i == 7)
-        {
-          setDSPL(true, true, false, false, true);
-          setDSPH(true, false, true, false, true);
-          displayInterface.setChannel10Bit(11, false);
+    // ND1/ND2 "36"
+    displayInterface.setChannel10Register(0x4B7C); // 100 1011 0111 1100
+    displayInterface.decodeData();
 
-          // R1D4/R1D5
-          setRLWD(false, true, true, false);
-          displayInterface.decodeData();
-        }
-        else if (i == 8)
-        {
-          setDSPL(true, false, true, true, true);
-          setDSPH(true, false, true, false, true);
-          displayInterface.setChannel10Bit(11, false);
+    // R1D1 "0"
+    displayInterface.setChannel10Register(0x42B5); // 100 0010 1011 0101
+    displayInterface.decodeData();
 
-          // R1D4/R1D5
-          setRLWD(false, true, true, false);
-          displayInterface.decodeData();
-        }
-        else
-        {
-          setDSPL(true, true, true, true, true);
-          setDSPH(true, false, true, false, true);
-          displayInterface.setChannel10Bit(11, false);
+    // R1D2/R1D3 "00"
+    displayInterface.setChannel10Register(0x3AB5); // 011 1010 1011 0101
+    displayInterface.decodeData();
 
-          // R1D4/R1D5
-          setRLWD(false, true, true, false);
-          displayInterface.decodeData();
-        }
-        Thread.sleep(1000);
-      }
+    // R1D4/R1D5 "-15"
+    displayInterface.setChannel10Register(0x347E); // 011 0100 0111 1110
+    displayInterface.decodeData();
 
-      // ---------------Toggle all the indicators --------------
-      // Toggle UPLINK ACTY
-      indicatorInterface.setChannel11Bit(3, true);
-      indicatorInterface.setChannel11Bit(3, false);
+    // R2D1/R2D2 "00"
+    displayInterface.setChannel10Register(0x2AB5); // 010 1010 1011 0101
+    displayInterface.decodeData();
 
-      // Toggle NO ATT
-      resetChannel10();
-      Thread.sleep(500);
-      displayInterface.setChannel10Bit(4, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-      displayInterface.setChannel10Bit(4, false);
-      displayInterface.decodeData();
+    // R2D3/R2D4 "-01"
+    displayInterface.setChannel10Register(0x26A3); // 010 0110 1010 0011
+    displayInterface.decodeData();
 
-      // Toggle STBY
-      indicatorInterface.setStandby(true);
-      Thread.sleep(500);
-      indicatorInterface.setStandby(false);
+    // R2D5/R3D1 "20"
+    displayInterface.setChannel10Register(0x1B35); // 001 1011 0011 0101
+    displayInterface.decodeData();
 
-      // Toggle KEY REL
-      indicatorInterface.setChannel11Bit(5, true);
-      Thread.sleep(500);
-      indicatorInterface.setChannel11Bit(5, false);
+    // R3D2/R3D3 "+05"
+    displayInterface.setChannel10Register(0x16BE); // 001 0110 1011 1110
+    displayInterface.decodeData();
 
-      // Toggle OPR ERR
-      indicatorInterface.setChannel11Bit(7, true);
-      Thread.sleep(500);
-      indicatorInterface.setChannel11Bit(7, false);
-
-      // Toggle TEMP
-      indicatorInterface.setChannel11Bit(4, true);
-      Thread.sleep(500);
-      indicatorInterface.setChannel11Bit(4, false);
-
-      // Toggle GIMBAL LOCK
-      resetChannel10();
-      displayInterface.setChannel10Bit(6, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-      displayInterface.setChannel10Bit(6, false);
-      displayInterface.decodeData();
-
-      // Toggle PROG
-      resetChannel10();
-      displayInterface.setChannel10Bit(9, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-      displayInterface.setChannel10Bit(9, false);
-      displayInterface.decodeData();
-
-      // Toggle RESTART
-      indicatorInterface.setParalm(true);
-      Thread.sleep(500);
-      indicatorInterface.setParalm(false);
-
-      // Toggle TRACKER
-      resetChannel10();
-      displayInterface.setChannel10Bit(8, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-      displayInterface.setChannel10Bit(8, false);
-      displayInterface.decodeData();
-
-      // Toggle ALT
-      resetChannel10();
-      displayInterface.setChannel10Bit(5, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-      displayInterface.setChannel10Bit(5, false);
-      displayInterface.decodeData();
-
-      // Toggle VEL
-      resetChannel10();
-      displayInterface.setChannel10Bit(3, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-      displayInterface.setChannel10Bit(3, false);
-      displayInterface.decodeData();
-
-      // Toggle COMP ACTY
-      indicatorInterface.setChannel11Bit(2, true);
-      Thread.sleep(500);
-      indicatorInterface.setChannel11Bit(2, false);
-      Thread.sleep(500);
-
-      // Reset the displays.
-      displayInterface.resetDisplay();
-      indicatorInterface.resetDisplay();
-      Thread.sleep(500);
-
-      // TODO: go to standby
-
-      // -------------- Set indicators and display to the NASA image. -------------------
-      resetChannel10();
-      // Set NO ATT, PROG, VEL
-      displayInterface.setChannel10Bit(4, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-      displayInterface.setChannel10Bit(9, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-      displayInterface.setChannel10Bit(3, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // Set KEY REL, TEMP
-      indicatorInterface.setChannel11Bit(4, true);
-      Thread.sleep(500);
-      indicatorInterface.setChannel11Bit(5, true);
-      Thread.sleep(500);
-
-      // ---------------- Set display characters -------------------
-
-      // MD1/MD2 "00"
-      setDSPL(true, false, true, false, true);
-      setDSPH(true, false, true, false, true);
-      displayInterface.setChannel10Bit(11, false);
-      setRLWD(true, true, false, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // VD1/VD2 "06"
-      setDSPL(false, false, true, true, true);
-      setDSPH(true, false, true, false, true);
-      displayInterface.setChannel10Bit(11, false);
-      setRLWD(false, true, false, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // ND1/ND2 "36"
-      setDSPL(false, false, true, true, true);
-      setDSPH(true, true, false, true, true);
-      displayInterface.setChannel10Bit(11, false);
-      setRLWD(true, false, false, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // R1D1 "0"
-      setDSPL(true, false, true, false, true);
-      setDSPH(true, false, true, false, true);
-      displayInterface.setChannel10Bit(11, false);
-      setRLWD(false, false, false, true);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // R1D2/R1D3 "00"
-      setDSPL(true, false, true, false, true);
-      setDSPH(true, false, true, false, true);
-      displayInterface.setChannel10Bit(11, false);
-      setRLWD(true, true, true, false);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // R1D4/R1D5 "-15"
-      setDSPL(false, true, true, true, true);
-      setDSPH(true, true, false, false, false);
-      displayInterface.setChannel10Bit(11, true);
-      setRLWD(false, true, true, false);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // R2D1/R2D2 "00"
-      setDSPL(true, false, true, false, true);
-      setDSPH(true, false, true, false, true);
-      displayInterface.setChannel10Bit(11, false);
-      setRLWD(true, false, true, false);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // R2D3/R2D4 "-01"
-      setDSPL(true, true, false, false, false);
-      setDSPH(true, false, true, false, true);
-      displayInterface.setChannel10Bit(11, true);
-      setRLWD(false, false, true, false);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // R2D5/R3D1 "20"
-      setDSPL(true, false, true, false, true);
-      setDSPH(true, false, false, true, true);
-      displayInterface.setChannel10Bit(11, false);
-      setRLWD(true, true, false, false);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // R3D2/R3D3 "+05"
-      setDSPL(false, true, true, true, true);
-      setDSPH(true, false, true, false, true);
-      displayInterface.setChannel10Bit(11, true);
-      setRLWD(false, true, false, false);
-      displayInterface.decodeData();
-      Thread.sleep(500);
-
-      // R3D4/R3D5 "68"
-      setDSPL(true, false, true, true, true);
-      setDSPH(false, false, true, true, true);
-      displayInterface.setChannel10Bit(11, false);
-      setRLWD(true, false, false, false);
-      displayInterface.decodeData();
-    }
-    catch (InterruptedException e)
-    {
-      System.out.println(e.getMessage());
-    }
-  }
-
-  private void setDSPL(boolean bit1, boolean bit2, boolean bit3, boolean bit4, boolean bit5)
-  {
-    displayInterface.setChannel10Bit(1, bit1);
-    displayInterface.setChannel10Bit(2, bit2);
-    displayInterface.setChannel10Bit(3, bit3);
-    displayInterface.setChannel10Bit(4, bit4);
-    displayInterface.setChannel10Bit(5, bit5);
-  }
-
-  private void setDSPH(boolean bit6, boolean bit7, boolean bit8, boolean bit9, boolean bit10)
-  {
-    displayInterface.setChannel10Bit(6, bit6);
-    displayInterface.setChannel10Bit(7, bit7);
-    displayInterface.setChannel10Bit(8, bit8);
-    displayInterface.setChannel10Bit(9, bit9);
-    displayInterface.setChannel10Bit(10, bit10);
-  }
-
-  private void setRLWD(boolean bit12, boolean bit13, boolean bit14, boolean bit15)
-  {
-    displayInterface.setChannel10Bit(12, bit12);
-    displayInterface.setChannel10Bit(13, bit13);
-    displayInterface.setChannel10Bit(14, bit14);
-    displayInterface.setChannel10Bit(15, bit15);
+    // R3D4/R3D5 "68"
+    displayInterface.setChannel10Register(0x0B9D); // 000 1011 1001 1101
+    displayInterface.decodeData();
   }
 
   /**

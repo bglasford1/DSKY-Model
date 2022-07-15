@@ -95,5 +95,7 @@ public class DSKY
     {
       simInterface.closeInterface();
     }
+
+    serialInterface.closeInterface();
   }
 }

@@ -181,12 +181,12 @@ public class AGCInterface
     {
       // Read Channel bus and send data to IndicatorInterface.
       // Note: The Channel bus should be set to input unless a write is occurring.
-      indicatorInterface.setChannel11Bit(2, channelBit2.getState().isHigh());
-      indicatorInterface.setChannel11Bit(3, channelBit3.getState().isHigh());
-      indicatorInterface.setChannel11Bit(4, channelBit4.getState().isHigh());
-      indicatorInterface.setChannel11Bit(5, channelBit5.getState().isHigh());
-      indicatorInterface.setChannel11Bit(6, channelBit6.getState().isHigh());
-      indicatorInterface.setChannel11Bit(7, channelBit7.getState().isHigh());
+      indicatorInterface.setCompActy(channelBit2.getState().isHigh());
+      indicatorInterface.setUplinkActy(channelBit3.getState().isHigh());
+      indicatorInterface.setTemp(channelBit4.getState().isHigh());
+      indicatorInterface.setKeyRel(channelBit5.getState().isHigh());
+      indicatorInterface.setFlashVerbNoun(channelBit6.getState().isHigh());
+      indicatorInterface.setOprErr(channelBit7.getState().isHigh());
     });
 
     // Create a PARALM listener.

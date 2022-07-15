@@ -340,8 +340,59 @@ public class SerialInterface
       if (commandToSend != null)
       {
         displayPort.writeBytes(commandToSend, commandToSend.length);
-        Thread.sleep(60);
+        Thread.sleep(100);
       }
+    }
+    catch (InterruptedException e)
+    {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Method to set/clear the other indicators that originate from the channel 11 register.
+   *
+   * @param value The value to write.
+   */
+  public void sendOtherIndicatorsCommand(int value)
+  {
+    byte[] commandToSend = new byte[] { 52, 32, 32, 32 };
+    String stringValue = String.valueOf(value);
+    byte[] valueBytes = stringValue.getBytes(StandardCharsets.US_ASCII);
+    for (int i = 0; i < valueBytes.length; i++)
+    {
+      commandToSend[2+i] = valueBytes[i];
+    }
+    sendCommand(commandToSend);
+    try
+    {
+      Thread.sleep(100);
+    }
+    catch (InterruptedException e)
+    {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Method to set/clear the display indicators that originate from the channel 10 register,
+   * relay word 12.
+   *
+   * @param value The value to write.
+   */
+  public void sendDisplayIndicatorsCommand(int value)
+  {
+    byte[] commandToSend = new byte[] { 51, 32, 32, 32 };
+    String stringValue = String.valueOf(value);
+    byte[] valueBytes = stringValue.getBytes(StandardCharsets.US_ASCII);
+    for (int i = 0; i < valueBytes.length; i++)
+    {
+      commandToSend[2+i] = valueBytes[i];
+    }
+    sendCommand(commandToSend);
+    try
+    {
+      Thread.sleep(100);
     }
     catch (InterruptedException e)
     {
@@ -507,7 +558,7 @@ public class SerialInterface
       if (command != null)
       {
         indicatorsPort.writeBytes(command, command.length);
-        Thread.sleep(60);
+        Thread.sleep(100);
       }
     }
     catch (InterruptedException e)

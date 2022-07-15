@@ -79,6 +79,11 @@ public class DisplayInterface
       channel10Register.clear(bit);
   }
 
+  /**
+   * Method called to set the Channel 10 register values.
+   *
+   * @param value The integer value for the Channel 10 register.
+   */
   public void setChannel10Register(int value)
   {
     // Don't process the MSB.  Bit 0 is actually bit 1.
@@ -156,12 +161,13 @@ public class DisplayInterface
    */
   public void decodeData()
   {
+    int relayWordValue = -1;
     try
     {
       // Decode Relay Word.
       boolean dspcValue = channel10Register.get(11);
       BitSet relayWordBits = channel10Register.get(12, 16);
-      int relayWordValue = toInt(relayWordBits);
+      relayWordValue = Utils.toInt(relayWordBits);
       int lowerValue = 0;
       int upperValue = 0;
 
@@ -182,6 +188,7 @@ public class DisplayInterface
         // This command contains R3D4, R3D5 and -R3S
         r3d4 = upperValue;
         r3d5 = lowerValue;
+        r3sMinus = true;
         serialInterface.sendDisplayCommand(DisplayCommand.R3D4, upperValue);
         serialInterface.sendDisplayCommand(DisplayCommand.R3D5, lowerValue);
         if (dspcValue)
@@ -374,54 +381,43 @@ public class DisplayInterface
         boolean bit8Value = channel10Register.get(8);
         boolean bit9Value = channel10Register.get(9);
 
-        try
+        if (bit3Value != indicators.get(3))
         {
-          if (bit3Value != indicators.get(3))
-          {
-            indicators.set(3, bit3Value);
-            serialInterface.sendIndicatorCommand(IndicatorCommand.VEL, bit3Value);
-            Thread.sleep(100);
-          }
-          if (bit4Value != indicators.get(4))
-          {
-            indicators.set(4, bit4Value);
-            serialInterface.sendIndicatorCommand(IndicatorCommand.NO_ATT, bit4Value);
-            Thread.sleep(100);
-          }
-          if (bit5Value != indicators.get(5))
-          {
-            indicators.set(5, bit5Value);
-            serialInterface.sendIndicatorCommand(IndicatorCommand.ALT, bit5Value);
-            Thread.sleep(100);
-          }
-          if (bit6Value != indicators.get(6))
-          {
-            indicators.set(6, bit6Value);
-            serialInterface.sendIndicatorCommand(IndicatorCommand.GIMBAL_LOCK, bit6Value);
-            Thread.sleep(100);
-          }
-          if (bit8Value != indicators.get(8))
-          {
-            indicators.set(8, bit8Value);
-            serialInterface.sendIndicatorCommand(IndicatorCommand.TRACKER, bit8Value);
-            Thread.sleep(100);
-          }
-          if (bit9Value != indicators.get(9))
-          {
-            indicators.set(9, bit9Value);
-            serialInterface.sendIndicatorCommand(IndicatorCommand.PROG, bit9Value);
-            Thread.sleep(100);
-          }
+          indicators.set(3, bit3Value);
+          serialInterface.sendIndicatorCommand(IndicatorCommand.VEL, bit3Value);
         }
-        catch (InterruptedException e)
+        if (bit4Value != indicators.get(4))
         {
-          e.printStackTrace();
+          indicators.set(4, bit4Value);
+          serialInterface.sendIndicatorCommand(IndicatorCommand.NO_ATT, bit4Value);
+        }
+        if (bit5Value != indicators.get(5))
+        {
+          indicators.set(5, bit5Value);
+          serialInterface.sendIndicatorCommand(IndicatorCommand.ALT, bit5Value);
+        }
+        if (bit6Value != indicators.get(6))
+        {
+          indicators.set(6, bit6Value);
+          serialInterface.sendIndicatorCommand(IndicatorCommand.GIMBAL_LOCK, bit6Value);
+        }
+        if (bit8Value != indicators.get(8))
+        {
+          indicators.set(8, bit8Value);
+          serialInterface.sendIndicatorCommand(IndicatorCommand.TRACKER, bit8Value);
+        }
+        if (bit9Value != indicators.get(9))
+        {
+          indicators.set(9, bit9Value);
+          serialInterface.sendIndicatorCommand(IndicatorCommand.PROG, bit9Value);
         }
       }
     }
     catch (IllegalArgumentException e)
     {
-      System.out.println("Invalid Channel Bus value for DISP: " + channel10Register);
+      e.printStackTrace();
+      System.out.println("Invalid Channel Bus value for DISP: " + channel10Register +
+                         ", RLWD = " + relayWordValue);
     }
   }
 
@@ -434,7 +430,7 @@ public class DisplayInterface
    */
   private static int decodeValue(BitSet bits) throws IllegalArgumentException
   {
-    int value = toInt(bits);
+    int value = Utils.toInt(bits);
     if (value == 0)
     {
       return -1;
@@ -481,24 +477,5 @@ public class DisplayInterface
     }
     else
       throw new IllegalArgumentException();
-  }
-
-  /**
-   * Internal method to convert a bitset to an integer value.
-   *
-   * @param bitSet The bitset to convert.
-   * @return The integer value.
-   */
-  private static int toInt(BitSet bitSet)
-  {
-    int intValue = 0;
-    for (int bit = 0; bit < bitSet.length(); bit++)
-    {
-      if (bitSet.get(bit))
-      {
-        intValue |= (1 << bit);
-      }
-    }
-    return intValue;
   }
 }

@@ -133,11 +133,11 @@ public class SimInterface extends Thread
           // Process Channel 11 - indicator status.
           if (pValue == 9)
           {
-            indicatorInterface.setChannel11Bit(2, (dValue & 0x0002) != 0); // COMP ACTY
-            indicatorInterface.setChannel11Bit(3, (dValue & 0x0004) != 0); // UPLINK ACTY
-            indicatorInterface.setChannel11Bit(4, (dValue & 0x0008) != 0); // TEMP
-            indicatorInterface.setChannel11Bit(5, (dValue & 0x0010) != 0); // KEY REL
-            indicatorInterface.setChannel11Bit(7, (dValue & 0x0040) != 0); // OPR ERR
+            indicatorInterface.setCompActy((dValue & 0x0002) != 0);
+            indicatorInterface.setUplinkActy((dValue & 0x0004) != 0);
+            indicatorInterface.setTemp((dValue & 0x0008) != 0);
+            indicatorInterface.setKeyRel((dValue & 0x0010) != 0);
+            indicatorInterface.setOprErr((dValue & 0x0040) != 0);
           }
           // Process Channel 10 - display data.
           else if (pValue == 8)
@@ -151,10 +151,10 @@ public class SimInterface extends Thread
           // Process pseudo channel 163 - What in the real system is Channel 10, Relay Word 12 data.
           else if (pValue == 115)
           {
-            indicatorInterface.setChannel11Bit(4, (dValue & 0x0008) != 0); // TEMP
-            indicatorInterface.setChannel11Bit(5, (dValue & 0x0010) != 0); // KEY REL
-            indicatorInterface.setChannel11Bit(6, (dValue & 0x0020) != 0); // Flash VERB/NOUN
-            indicatorInterface.setChannel11Bit(7, (dValue & 0x0040) != 0); // OPR ERR
+            indicatorInterface.setTemp((dValue & 0x0008) != 0);
+            indicatorInterface.setKeyRel((dValue & 0x0010) != 0);
+            indicatorInterface.setFlashVerbNoun((dValue & 0x0020) != 0);
+            indicatorInterface.setOprErr((dValue & 0x0040) != 0);
             indicatorInterface.setRestart((dValue & 0x0080) != 0);
             indicatorInterface.setStandby((dValue & 0x0100) != 0);
           }
