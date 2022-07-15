@@ -8,7 +8,7 @@
  *  The code waits for a command from the higher level Raspberry Pi and executes the command.
  *
  * Mods:     07/04/22  Initial Release.
- *  
+ *           07/15/22  Simplified commands to take 6 indicators at a time.
  */
 #include <SPI.h>
 #include "Adafruit_GFX.h"
@@ -50,6 +50,9 @@ Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC, TFT_RST);
 // SoftSPI - note that on some processors this might be *faster* than hardware SPI!
 //Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC, MOSI, SCK, TFT_RST, MISO);
 
+int savedDisplayIndicators = 0;
+int savedOtherIndicators = 0;
+
 void setup() 
 {
   String commandString;
@@ -61,7 +64,7 @@ void setup()
   tft.setRotation(2);
 
   resetDisplay();
-  delay(500);
+  delay(100);
 
   // Wait for an initialize command.
   bool initialized = false;
@@ -87,23 +90,26 @@ void setup()
 
 /*
  * This is the main Arduino loop that runs continuously.  It waits for a command from the 
- * Raspberry Pi, then executes the command before waiting for the next command.  Each of the
- * indicator commands are followed by a 0 = off or 1 = on.  The commands are:
+ * Raspberry Pi, then executes the command before waiting for the next command.  Commands 
+ * 3 & 4 are followed by an integer string that represents the bits as defined below.
+ * The commands are:
  * 0  = Noop
  * 1  = Reset to power on state
  * 2  = Identify
- * 3  = UPLINK ACTY
- * 4  = NO ATT
- * 5  = STBY
- * 6  = KEY REL
- * 7  = OPR ERR
- * 8  = TEMP
- * 9  = GIMBAL LOCK
- * 10 = PROG
- * 11 = RESTART
- * 12 = TRACKER
- * 13 = ALT
- * 14 = VEL
+ * 3  = Display Indicators
+ *        Bit 0 = NO ATT
+ *        Bit 1 = GIMBAL LOCK
+ *        Bit 2 = PROG
+ *        Bit 3 = TRACKER
+ *        Bit 4 = ALT
+ *        Bit 5 = VEL
+ * 4  = Other Indicators
+ *        Bit 0 = UPLINK ACTY
+ *        Bit 1 = KEY REL
+ *        Bit 2 = OPR ERR
+ *        Bit 3 = TEMP
+ *        Bit 4 = STBY
+ *        Bit 5 = RESTART
  */
 void loop() 
 {
@@ -140,318 +146,397 @@ void loop()
      resetDisplay();
     }
     
-    // Process the UPLINK ACTY command.
+    // Process the Display Indicators command.
     else if (command == "3")
     {
-     if (data == "0")
+      byte newDisplayValue = (byte)data.toInt();
+      byte bitZero  = newDisplayValue & 0x01;
+      byte bitOne   = (newDisplayValue >> 1) & 0x01;
+      byte bitTwo   = (newDisplayValue >> 2) & 0x01;
+      byte bitThree = (newDisplayValue >> 3) & 0x01;
+      byte bitFour  = (newDisplayValue >> 4) & 0x01;
+      byte bitFive  = (newDisplayValue >> 5) & 0x01;
+      
+      byte oldBitZero  = savedDisplayIndicators & 0x01;
+      byte oldBitOne   = (savedDisplayIndicators >> 1) & 0x01;
+      byte oldBitTwo   = (savedDisplayIndicators >> 2) & 0x01;
+      byte oldBitThree = (savedDisplayIndicators >> 3) & 0x01;
+      byte oldBitFour  = (savedDisplayIndicators >> 4) & 0x01;
+      byte oldBitFive  = (savedDisplayIndicators >> 5) & 0x01;
+
+      if (bitZero != oldBitZero)
       {
-        tft.fillRect(START_COL1, START_ROW1, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL1 + TEXT_LONG, START_ROW1 + TEXT_UPPER_ROW);
-        tft.println("UPLINK");
- 
-        tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW1 + TEXT_LOWER_ROW);
-        tft.println("ACTY");
+        drawNOATT(bitZero);
       }
-      else
+      if (bitOne != oldBitOne)
       {
-        tft.fillRect(START_COL1, START_ROW1, BOX_WIDTH, BOX_HEIGHT, WHITE);
-    
-        tft.setCursor(START_COL1 + TEXT_LONG, START_ROW1 + TEXT_UPPER_ROW);
-        tft.println("UPLINK");
- 
-        tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW1 + TEXT_LOWER_ROW);
-        tft.println("ACTY");
+        drawGIMBALLOCK(bitOne);
       }
+      if (bitTwo != oldBitTwo)
+      {
+        drawPROG(bitTwo);
+      }
+      if (bitThree != oldBitThree)
+      {
+        drawTRACKER(bitThree);
+      }
+      if (bitFour != oldBitFour)
+      {
+        drawALT(bitFour);
+      }
+      if (bitFive != oldBitFive)
+      {
+        drawVEL(bitFive);
+      }
+      savedDisplayIndicators = newDisplayValue;
     }
 
-    // Process the NO ATT command.
+    // Process the Other Indicators command.
     else if (command == "4")
     {
-      if (data == "0")
+      byte newOtherValue = (byte)data.toInt();
+      byte bitZero  = newOtherValue & 0x01;
+      byte bitOne   = (newOtherValue >> 1) & 0x01;
+      byte bitTwo   = (newOtherValue >> 2) & 0x01;
+      byte bitThree = (newOtherValue >> 3) & 0x01;
+      byte bitFour  = (newOtherValue >> 4) & 0x01;
+      byte bitFive  = (newOtherValue >> 5) & 0x01;
+      
+      byte oldBitZero  = savedOtherIndicators & 0x01;
+      byte oldBitOne   = (savedOtherIndicators >> 1) & 0x01;
+      byte oldBitTwo   = (savedOtherIndicators >> 2) & 0x01;
+      byte oldBitThree = (savedOtherIndicators >> 3) & 0x01;
+      byte oldBitFour  = (savedOtherIndicators >> 4) & 0x01;
+      byte oldBitFive  = (savedOtherIndicators >> 5) & 0x01;
+
+      if (bitZero != oldBitZero)
       {
-        tft.fillRect(START_COL1, START_ROW2, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL1 + TEXT_LONG, START_ROW2 + TEXT_CENTERED);
-        tft.println("NO ATT");
+        drawUPLINKACTY(bitZero);
       }
-      else
+      if (bitOne != oldBitOne)
       {
-        tft.fillRect(START_COL1, START_ROW2, BOX_WIDTH, BOX_HEIGHT, WHITE);
-    
-        tft.setCursor(START_COL1 + TEXT_LONG, START_ROW2 + TEXT_CENTERED);
-        tft.println("NO ATT");
+        drawKEYREL(bitOne);
       }
+      if (bitTwo != oldBitTwo)
+      {
+        drawOPRERR(bitTwo);
+      }
+      if (bitThree != oldBitThree)
+      {
+        drawTEMP(bitThree);
+      }
+      if (bitFour != oldBitFour)
+      {
+        drawSTBY(bitFour);
+      }
+      if (bitFive != oldBitFive)
+      {
+        drawRESTART(bitFive);
+      }
+      savedOtherIndicators = newOtherValue;
     }
 
-    // Process the STBY command.
-    else if (command == "5")
-    {
-      if (data == "0")
-      {
-        tft.fillRect(START_COL1, START_ROW3, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
-        tft.println("STBY");
-      }
-      else
-      {
-        tft.fillRect(START_COL1, START_ROW3, BOX_WIDTH, BOX_HEIGHT, WHITE);
-    
-        tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
-        tft.println("STBY");
-      }
-    }
-
-    // Process the KEY REL command.
-    else if (command == "6")
-    {
-      if (data == "0")
-      {
-        tft.fillRect(START_COL1, START_ROW4, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL1 + TEXT_LONG, START_ROW4 + TEXT_CENTERED);
-        tft.println("KEY REL");
-      }
-      else
-      {
-        tft.fillRect(START_COL1, START_ROW4, BOX_WIDTH, BOX_HEIGHT, WHITE);
-    
-        tft.setCursor(START_COL1 + TEXT_LONG, START_ROW4 + TEXT_CENTERED);
-        tft.println("KEY REL");
-      }
-    }
-
-    // Process the OPR ERR command.
-    else if (command == "7")
-    {
-      if (data == "0")
-      {
-        tft.fillRect(START_COL1, START_ROW5, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL1 + TEXT_LONG, START_ROW5 + TEXT_CENTERED);
-        tft.println("OPR ERR");
-      }
-      else
-      {
-        tft.fillRect(START_COL1, START_ROW5, BOX_WIDTH, BOX_HEIGHT, WHITE);
-    
-        tft.setCursor(START_COL1 + TEXT_LONG, START_ROW5 + TEXT_CENTERED);
-        tft.println("OPR ERR");
-      }
-    }
-
-    // Process the TEMP command.
-    else if (command == "8")
-    {
-      if (data == "0")
-      {
-        tft.fillRect(START_COL2, START_ROW1, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setTextColor(BLACK);
-        tft.setTextSize(2);
-        tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW1 + TEXT_CENTERED);
-        tft.println("TEMP");
-      }
-      else
-      {
-        tft.fillRect(START_COL2, START_ROW1, BOX_WIDTH, BOX_HEIGHT, YELLOW);
-    
-        tft.setTextColor(BLACK);
-        tft.setTextSize(2);
-        tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW1 + TEXT_CENTERED);
-        tft.println("TEMP");
-      }
-    }
-
-    // Process the GIMBAL LOCK command.
-    else if (command == "9")
-    {
-      if (data == "0")
-      {
-        tft.fillRect(START_COL2, START_ROW2, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL2 + TEXT_LONG, START_ROW2 + TEXT_UPPER_ROW);
-        tft.println("GIMBAL");
-    
-        tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW2 + TEXT_LOWER_ROW);
-        tft.println("LOCK");
-      }
-      else
-      {
-        tft.fillRect(START_COL2, START_ROW2, BOX_WIDTH, BOX_HEIGHT, YELLOW);
-    
-        tft.setCursor(START_COL2 + TEXT_LONG, START_ROW2 + TEXT_UPPER_ROW);
-        tft.println("GIMBAL");
-    
-        tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW2 + TEXT_LOWER_ROW);
-        tft.println("LOCK");
-      }
-    }
-
-    // Process the PROG command.
-    else if (command == "10")
-    {
-      if (data == "0")
-      {
-        tft.fillRect(START_COL2, START_ROW3, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
-        tft.println("PROG");
-      }
-      else
-      {
-        tft.fillRect(START_COL2, START_ROW3, BOX_WIDTH, BOX_HEIGHT, YELLOW);
-    
-        tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
-        tft.println("PROG");
-      }
-    }
-
-    // Process the RESTART command.
-    else if (command == "11")
-    {
-      if (data == "0")
-      {
-        tft.fillRect(START_COL2, START_ROW4, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW4 + TEXT_CENTERED);
-        tft.println("RESTART");
-      }
-      else
-      {
-        tft.fillRect(START_COL2, START_ROW4, BOX_WIDTH, BOX_HEIGHT, YELLOW);
-    
-        tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW4 + TEXT_CENTERED);
-        tft.println("RESTART");
-      }
-    }
-
-    // Process the TRACKER command.
-    else if (command == "12")
-    {
-      if (data == "0")
-      {
-        tft.fillRect(START_COL2, START_ROW5, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW5 + TEXT_CENTERED);
-        tft.println("TRACKER");
-      }
-      else
-      {
-        tft.fillRect(START_COL2, START_ROW5, BOX_WIDTH, BOX_HEIGHT, YELLOW);
-    
-        tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW5 + TEXT_CENTERED);
-        tft.println("TRACKER");
-      }
-    }
-
-    // Process the ALT command.
-    else if (command == "13")
-    {
-      if (data == "0")
-      {
-        tft.fillRect(START_COL2, START_ROW6, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW6 + TEXT_CENTERED);
-        tft.println("ALT");
-      }
-      else
-      {
-        tft.fillRect(START_COL2, START_ROW6, BOX_WIDTH, BOX_HEIGHT, YELLOW);
-    
-        tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW6 + TEXT_CENTERED);
-        tft.println("ALT");
-      }
-    }
-
-    // Process the VEL command.
-    else if (command == "14")
-    {
-      if (data == "0")
-      {
-        tft.fillRect(START_COL2, START_ROW7, BOX_WIDTH, BOX_HEIGHT, GREY);
-    
-        tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW7 + TEXT_CENTERED);
-        tft.println("VEL");
-      }
-      else
-      {
-        tft.fillRect(START_COL2, START_ROW7, BOX_WIDTH, BOX_HEIGHT, YELLOW);
-    
-        tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW7 + TEXT_CENTERED);
-        tft.println("VEL");
-      }
-    }
     commandString = "";
   }
 }
 
-  /*
-   * Reset the display to a power on state.
-   */
-  void resetDisplay()
-  {
-    // First draw the rectangles.
-    tft.fillScreen(HX8357_BLACK);
-    tft.fillRect(START_COL1, START_ROW1, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL1, START_ROW2, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL1, START_ROW3, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL1, START_ROW4, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL1, START_ROW5, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL1, START_ROW6, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL1, START_ROW7, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL2, START_ROW1, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL2, START_ROW2, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL2, START_ROW3, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL2, START_ROW4, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL2, START_ROW5, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL2, START_ROW6, BOX_WIDTH, BOX_HEIGHT, GREY);
-    tft.fillRect(START_COL2, START_ROW7, BOX_WIDTH, BOX_HEIGHT, GREY);
+void drawUPLINKACTY(int bit)
+{
+   if (bit == 0)
+    {
+      tft.fillRect(START_COL1, START_ROW1, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL1 + TEXT_LONG, START_ROW1 + TEXT_UPPER_ROW);
+      tft.println("UPLINK");
 
-    // Now set the text on top of the rectangles.
-    tft.setTextColor(BLACK);
-    tft.setTextSize(2);
-    
-    tft.setCursor(START_COL1 + TEXT_LONG, START_ROW1 + TEXT_UPPER_ROW);
-    tft.println("UPLINK");
- 
-    tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW1 + TEXT_LOWER_ROW);
-    tft.println("ACTY");
-    
-    tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW1 + TEXT_CENTERED);
-    tft.println("TEMP");
-    
-    tft.setCursor(START_COL1 + TEXT_LONG, START_ROW2 + TEXT_CENTERED);
-    tft.println("NO ATT");
-    
-    tft.setCursor(START_COL2 + TEXT_LONG, START_ROW2 + TEXT_UPPER_ROW);
-    tft.println("GIMBAL");
-    
-    tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW2 + TEXT_LOWER_ROW);
-    tft.println("LOCK");
-    
-    tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
-    tft.println("STBY");
-    
-    tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
-    tft.println("PROG");
-    
-    tft.setCursor(START_COL1 + TEXT_LONG, START_ROW4 + TEXT_CENTERED);
-    tft.println("KEY REL");
-    
-    tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW4 + TEXT_CENTERED);
-    tft.println("RESTART");
-    
-    tft.setCursor(START_COL1 + TEXT_LONG, START_ROW5 + TEXT_CENTERED);
-    tft.println("OPR ERR");
-    
-    tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW5 + TEXT_CENTERED);
-    tft.println("TRACKER");
-    
-    tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW6 + TEXT_CENTERED);
-    tft.println("ALT");
-    
-    tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW7 + TEXT_CENTERED);
-    tft.println("VEL");
-  }
+      tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW1 + TEXT_LOWER_ROW);
+      tft.println("ACTY");
+    }
+    else
+    {
+      tft.fillRect(START_COL1, START_ROW1, BOX_WIDTH, BOX_HEIGHT, WHITE);
+  
+      tft.setCursor(START_COL1 + TEXT_LONG, START_ROW1 + TEXT_UPPER_ROW);
+      tft.println("UPLINK");
+
+      tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW1 + TEXT_LOWER_ROW);
+      tft.println("ACTY");
+    }
+}
+
+void drawNOATT(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL1, START_ROW2, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL1 + TEXT_LONG, START_ROW2 + TEXT_CENTERED);
+      tft.println("NO ATT");
+    }
+    else
+    {
+      tft.fillRect(START_COL1, START_ROW2, BOX_WIDTH, BOX_HEIGHT, WHITE);
+  
+      tft.setCursor(START_COL1 + TEXT_LONG, START_ROW2 + TEXT_CENTERED);
+      tft.println("NO ATT");
+    }
+}
+
+void drawSTBY(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL1, START_ROW3, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
+      tft.println("STBY");
+    }
+    else
+    {
+      tft.fillRect(START_COL1, START_ROW3, BOX_WIDTH, BOX_HEIGHT, WHITE);
+  
+      tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
+      tft.println("STBY");
+    }
+}
+
+void drawKEYREL(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL1, START_ROW4, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL1 + TEXT_LONG, START_ROW4 + TEXT_CENTERED);
+      tft.println("KEY REL");
+    }
+    else
+    {
+      tft.fillRect(START_COL1, START_ROW4, BOX_WIDTH, BOX_HEIGHT, WHITE);
+  
+      tft.setCursor(START_COL1 + TEXT_LONG, START_ROW4 + TEXT_CENTERED);
+      tft.println("KEY REL");
+    }
+}
+
+void drawOPRERR(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL1, START_ROW5, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL1 + TEXT_LONG, START_ROW5 + TEXT_CENTERED);
+      tft.println("OPR ERR");
+    }
+    else
+    {
+      tft.fillRect(START_COL1, START_ROW5, BOX_WIDTH, BOX_HEIGHT, WHITE);
+  
+      tft.setCursor(START_COL1 + TEXT_LONG, START_ROW5 + TEXT_CENTERED);
+      tft.println("OPR ERR");
+    }
+}
+
+void drawTEMP(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL2, START_ROW1, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setTextColor(BLACK);
+      tft.setTextSize(2);
+      tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW1 + TEXT_CENTERED);
+      tft.println("TEMP");
+    }
+    else
+    {
+      tft.fillRect(START_COL2, START_ROW1, BOX_WIDTH, BOX_HEIGHT, YELLOW);
+  
+      tft.setTextColor(BLACK);
+      tft.setTextSize(2);
+      tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW1 + TEXT_CENTERED);
+      tft.println("TEMP");
+    }
+}
+
+void drawGIMBALLOCK(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL2, START_ROW2, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL2 + TEXT_LONG, START_ROW2 + TEXT_UPPER_ROW);
+      tft.println("GIMBAL");
+  
+      tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW2 + TEXT_LOWER_ROW);
+      tft.println("LOCK");
+    }
+    else
+    {
+      tft.fillRect(START_COL2, START_ROW2, BOX_WIDTH, BOX_HEIGHT, YELLOW);
+  
+      tft.setCursor(START_COL2 + TEXT_LONG, START_ROW2 + TEXT_UPPER_ROW);
+      tft.println("GIMBAL");
+  
+      tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW2 + TEXT_LOWER_ROW);
+      tft.println("LOCK");
+    }
+}
+
+void drawPROG(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL2, START_ROW3, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
+      tft.println("PROG");
+    }
+    else
+    {
+      tft.fillRect(START_COL2, START_ROW3, BOX_WIDTH, BOX_HEIGHT, YELLOW);
+  
+      tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
+      tft.println("PROG");
+    }
+}
+
+void drawRESTART(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL2, START_ROW4, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW4 + TEXT_CENTERED);
+      tft.println("RESTART");
+    }
+    else
+    {
+      tft.fillRect(START_COL2, START_ROW4, BOX_WIDTH, BOX_HEIGHT, YELLOW);
+  
+      tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW4 + TEXT_CENTERED);
+      tft.println("RESTART");
+    }
+}
+
+void drawTRACKER(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL2, START_ROW5, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW5 + TEXT_CENTERED);
+      tft.println("TRACKER");
+    }
+    else
+    {
+      tft.fillRect(START_COL2, START_ROW5, BOX_WIDTH, BOX_HEIGHT, YELLOW);
+  
+      tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW5 + TEXT_CENTERED);
+      tft.println("TRACKER");
+    }
+}
+
+void drawALT(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL2, START_ROW6, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW6 + TEXT_CENTERED);
+      tft.println("ALT");
+    }
+    else
+    {
+      tft.fillRect(START_COL2, START_ROW6, BOX_WIDTH, BOX_HEIGHT, YELLOW);
+  
+      tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW6 + TEXT_CENTERED);
+      tft.println("ALT");
+    }
+}
+
+void drawVEL(int bit)
+{
+    if (bit == 0)
+    {
+      tft.fillRect(START_COL2, START_ROW7, BOX_WIDTH, BOX_HEIGHT, GREY);
+  
+      tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW7 + TEXT_CENTERED);
+      tft.println("VEL");
+    }
+    else
+    {
+      tft.fillRect(START_COL2, START_ROW7, BOX_WIDTH, BOX_HEIGHT, YELLOW);
+  
+      tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW7 + TEXT_CENTERED);
+      tft.println("VEL");
+    }
+}
+
+/*
+ * Reset the display to a power on state.
+ */
+void resetDisplay()
+{
+  // First draw the rectangles.
+  tft.fillScreen(HX8357_BLACK);
+  tft.fillRect(START_COL1, START_ROW1, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL1, START_ROW2, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL1, START_ROW3, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL1, START_ROW4, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL1, START_ROW5, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL1, START_ROW6, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL1, START_ROW7, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL2, START_ROW1, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL2, START_ROW2, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL2, START_ROW3, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL2, START_ROW4, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL2, START_ROW5, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL2, START_ROW6, BOX_WIDTH, BOX_HEIGHT, GREY);
+  tft.fillRect(START_COL2, START_ROW7, BOX_WIDTH, BOX_HEIGHT, GREY);
+
+  // Now set the text on top of the rectangles.
+  tft.setTextColor(BLACK);
+  tft.setTextSize(2);
+  
+  tft.setCursor(START_COL1 + TEXT_LONG, START_ROW1 + TEXT_UPPER_ROW);
+  tft.println("UPLINK");
+
+  tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW1 + TEXT_LOWER_ROW);
+  tft.println("ACTY");
+  
+  tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW1 + TEXT_CENTERED);
+  tft.println("TEMP");
+  
+  tft.setCursor(START_COL1 + TEXT_LONG, START_ROW2 + TEXT_CENTERED);
+  tft.println("NO ATT");
+  
+  tft.setCursor(START_COL2 + TEXT_LONG, START_ROW2 + TEXT_UPPER_ROW);
+  tft.println("GIMBAL");
+  
+  tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW2 + TEXT_LOWER_ROW);
+  tft.println("LOCK");
+  
+  tft.setCursor(START_COL1 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
+  tft.println("STBY");
+  
+  tft.setCursor(START_COL2 + TEXT_MEDIUM, START_ROW3 + TEXT_CENTERED);
+  tft.println("PROG");
+  
+  tft.setCursor(START_COL1 + TEXT_LONG, START_ROW4 + TEXT_CENTERED);
+  tft.println("KEY REL");
+  
+  tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW4 + TEXT_CENTERED);
+  tft.println("RESTART");
+  
+  tft.setCursor(START_COL1 + TEXT_LONG, START_ROW5 + TEXT_CENTERED);
+  tft.println("OPR ERR");
+  
+  tft.setCursor(START_COL2 + TEXT_XLONG, START_ROW5 + TEXT_CENTERED);
+  tft.println("TRACKER");
+  
+  tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW6 + TEXT_CENTERED);
+  tft.println("ALT");
+  
+  tft.setCursor(START_COL2 + TEXT_SHORT, START_ROW7 + TEXT_CENTERED);
+  tft.println("VEL");
+}
