@@ -1,0 +1,12 @@
+[Unit]
+ Description=AGC Service
+ After=multi-user.target
+
+ [Service]
+ Type=idle
+ WorkingDirectory=/home/pi/virtualagc/yaAGC
+ ExecStart=/home/pi/virtualagc/yaAGC/yaAGC ../Luminary131/Luminary131.bin --command=/home/pi/virtualagc/yaAGC/command.file
+
+ [Install]
+ WantedBy=multi-user.target
+

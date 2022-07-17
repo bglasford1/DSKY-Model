@@ -1,0 +1,11 @@
+[Unit]
+ Description=DSKY Service
+ After=multi-user.target
+
+ [Service]
+ Type=idle
+ ExecStart=java -jar /home/pi/DSKY/DSKYCode.jar
+
+ [Install]
+ WantedBy=multi-user.target
+
