@@ -135,7 +135,7 @@ public class SerialInterface
       try
       {
         //Delay to give Arduinos time to reset.
-        Thread.sleep(100);
+        Thread.sleep(120);
       }
       catch (InterruptedException e)
       {
@@ -192,7 +192,7 @@ public class SerialInterface
     {
       byte[] commandToSend = new byte[] { 49 };
       displayPort.writeBytes(commandToSend, commandToSend.length);
-      Thread.sleep(100);
+      Thread.sleep(120);
     }
     catch (InterruptedException e)
     {
@@ -215,7 +215,7 @@ public class SerialInterface
       else
         commandToSend = new byte[] { 52, 32, 48 };
       displayPort.writeBytes(commandToSend, commandToSend.length);
-      Thread.sleep(100);
+      Thread.sleep(120);
     }
     catch (InterruptedException e)
     {
@@ -241,7 +241,7 @@ public class SerialInterface
     try
     {
       displayPort.writeBytes(commandToSend, commandToSend.length);
-      Thread.sleep(100);
+      Thread.sleep(120);
     }
     catch (InterruptedException e)
     {
@@ -266,7 +266,7 @@ public class SerialInterface
     sendCommand(commandToSend);
     try
     {
-      Thread.sleep(100);
+      Thread.sleep(120);
     }
     catch (InterruptedException e)
     {
@@ -293,7 +293,7 @@ public class SerialInterface
 
     try
     {
-      Thread.sleep(100);
+      Thread.sleep(120);
     }
     catch (InterruptedException e)
     {
@@ -320,7 +320,7 @@ public class SerialInterface
     try
     {
       displayPort.writeBytes(commandToSend, commandToSend.length);
-      Thread.sleep(100);
+      Thread.sleep(120);
     }
     catch (InterruptedException e)
     {
@@ -341,7 +341,7 @@ public class SerialInterface
       if (command != null)
       {
         indicatorsPort.writeBytes(command, command.length);
-        Thread.sleep(100);
+        Thread.sleep(120);
       }
     }
     catch (InterruptedException e)
