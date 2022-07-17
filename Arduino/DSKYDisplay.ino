@@ -9,7 +9,7 @@
  *  The display is 320 x 480 pixels in size.
  *
  * Mods:     07/04/22  Initial Release.
- *  
+ *           07/16/22  Performance improvements.
  */
 #include <SPI.h>
 #include "Adafruit_GFX.h"
@@ -124,8 +124,27 @@
 #define R3D5_ROW 410
 #define R3D5_COL 250
 
+#define R1S_PLUS  10
+#define R1S_MINUS 11
+#define R2S_PLUS  20
+#define R2S_MINUS 21
+#define R3S_PLUS  30
+#define R3S_MINUS 31
+
 // Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
 Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC, TFT_RST);
+
+bool r1sPlus = false;
+bool r1sMinus = false;
+bool r2sPlus = false;
+bool r2sMinus = false;
+bool r3sPlus = false;
+bool r3sMinus = false;
+
+int vd1 = 0;
+int vd2 = 0;
+int nd1 = 0;
+int nd2 = 0;
 
 void setup() 
 {
@@ -164,40 +183,17 @@ void setup()
 
 /*
  * This is the main Arduino loop that runs continuously.  It waits for a command from the 
- * Raspberry Pi, then executes the command before waiting for the next command.  Each of the
- * commands are followed by a single digit numeric value except for the three sign commands.  
- * The sign command values are 0 = blank, 1 = minus and 2 = plus.  The COMP ACTY is followed 
- * by 0 = off or 1 = on.  The remaining commands are followed by 0-9 or B for blank.  
+ * Raspberry Pi, then executes the command before waiting for the next command.  Each 
+ * command is followed by a number representing the 15-bit channel value.  The COMP ACTY 
+ * is followed by 0 = off or 1 = on.  
  * The commands are:
  * 
  * 0  = Noop
  * 1  = Reset to power on state
  * 2  = Identify
- * 3  = MD1 value
- * 4  = MD2 value
- * 5  = VD1 value
- * 6  = VD2 value
- * 7  = ND1 value
- * 8  = ND2 value
- * 9  = R1S
- * 10 = R1D1
- * 11 = R1D2
- * 12 = R1D3
- * 13 = R1D4
- * 14 = R1D5
- * 15 = R2S
- * 16 = R2D1
- * 17 = R2D2
- * 18 = R2D3
- * 19 = R2D4
- * 20 = R2D5
- * 21 = R3S
- * 22 = R3D1
- * 23 = R3D2
- * 24 = R3D3
- * 25 = R3D4
- * 26 = R3D5
- * 27 = COMP ACTY
+ * 3  = Display Command
+ * 4 = COMP ACTY
+ * 5 = Flash Verb/Noun
  */
 void loop() 
 {
@@ -220,6 +216,10 @@ void loop()
     String data = "";
     String delim = " ";
     int number;
+    byte dspl;
+    byte dsph;
+    byte rlwd;
+    bool signValue = false;
 
     // Parse the command string.
     if (commandString != "0" && commandString != "1" && commandString != "2")
@@ -227,6 +227,12 @@ void loop()
       int firstDelimIndex = commandString.indexOf(delim);
       command = commandString.substring(0, firstDelimIndex);
       data = commandString.substring(firstDelimIndex + 1);
+      int intValue = data.toInt();
+      Serial.println(intValue);
+      rlwd = (intValue >> 11) & 0x000F;
+      dspl = intValue & 0x001F;
+      dsph = (intValue >> 5) & 0x001F;
+      signValue = (intValue >> 10) & 0x0001;
      }
     
     // Process the Reset command.
@@ -235,152 +241,167 @@ void loop()
       resetDisplay();
     }
 
-    // Process the MD1 command.
+    // Process the MD1/MD2 command.
     else if (command == "3")
     {
-      displayCharacter(data, MD1_COL, MD1_ROW);
-    }
-
-    // Process the MD2 command.
-    else if (command == "4")
-    {
-      displayCharacter(data, MD2_COL, MD2_ROW);
-    }
-
-    // Process the VD1 command.
-    else if (command == "5")
-    {
-      displayCharacter(data, VD1_COL, VD1_ROW);
-    }
-
-    // Process the VD2 command.
-    else if (command == "6")
-    {
-      displayCharacter(data, VD2_COL, VD2_ROW);
-    }
-
-    // Process the ND1 command.
-    else if (command == "7")
-    {
-      displayCharacter(data, ND1_COL, ND1_ROW);
-    }
-
-    // Process the ND2 command.
-    else if (command == "8")
-    {
-      displayCharacter(data, ND2_COL, ND2_ROW);
-    }
-
-    // Process the R1S command.
-    else if (command == "9")
-    {
-      displaySign(data, R1S_COL, R1S_ROW);
-    }
-
-    // Process the R1D1 command.
-    else if (command == "10")
-    {
-      displayCharacter(data, R1D1_COL, R1D1_ROW);
-    }
-
-    // Process the R1D2 command.
-    else if (command == "11")
-    {
-      displayCharacter(data, R1D2_COL, R1D2_ROW);
-    }
-
-    // Process the R1D3 command.
-    else if (command == "12")
-    {
-      displayCharacter(data, R1D3_COL, R1D3_ROW);
-    }
-
-    // Process the R1D4 command.
-    else if (command == "13")
-    {
-      displayCharacter(data, R1D4_COL, R1D4_ROW);
-    }
-
-    // Process the R1D5 command.
-    else if (command == "14")
-    {
-      displayCharacter(data, R1D5_COL, R1D5_ROW);
-    }
-
-    // Process the R2S command.
-    else if (command == "15")
-    {
-     displaySign(data, R2S_COL, R2S_ROW);
-     }
-
-    // Process the R2D1 command.
-    else if (command == "16")
-    {
-      displayCharacter(data, R2D1_COL, R2D1_ROW);
-    }
-
-    // Process the R2D2 command.
-    else if (command == "17")
-    {
-      displayCharacter(data, R2D2_COL, R2D2_ROW);
-    }
-
-    // Process the R2D3 command.
-    else if (command == "18")
-    {
-      displayCharacter(data, R2D3_COL, R2D3_ROW);
-    }
-
-    // Process the R2D4 command.
-    else if (command == "19")
-    {
-      displayCharacter(data, R2D4_COL, R2D4_ROW);
-    }
-
-    // Process the R2D5 command.
-    else if (command == "20")
-    {
-      displayCharacter(data, R2D5_COL, R2D5_ROW);
-    }
-
-    // Process the R3S command.
-    else if (command == "21")
-    {
-     displaySign(data, R3S_COL, R3S_ROW);
-     }
-
-    // Process the R3D1 command.
-    else if (command == "22")
-    {
-      displayCharacter(data, R3D1_COL, R3D1_ROW);
-    }
-
-    // Process the R3D2 command.
-    else if (command == "23")
-    {
-      displayCharacter(data, R3D2_COL, R3D2_ROW);
-    }
-
-    // Process the R3D3 command.
-    else if (command == "24")
-    {
-      displayCharacter(data, R3D3_COL, R3D3_ROW);
-    }
-
-    // Process the R3D4 command.
-    else if (command == "25")
-    {
-      displayCharacter(data, R3D4_COL, R3D4_ROW);
-    }
-
-    // Process the R3D5 command.
-    else if (command == "26")
-    {
-      displayCharacter(data, R3D5_COL, R3D5_ROW);
+      if (rlwd == 11)
+      {
+        displayCharacter(dsph, MD1_COL, MD1_ROW);
+        displayCharacter(dspl, MD2_COL, MD2_ROW);
+      }
+      else if (rlwd == 10)
+      {
+        vd1 = dspl;
+        vd2 = dsph;
+        displayCharacter(dsph, VD1_COL, VD1_ROW);
+        displayCharacter(dspl, VD2_COL, VD2_ROW);
+      }
+      else if (rlwd == 9)
+      {
+        nd1 = dspl;
+        nd2 = dsph;
+        displayCharacter(dsph, ND1_COL, ND1_ROW);
+        displayCharacter(dspl, ND2_COL, ND2_ROW);
+      }
+      else if (rlwd == 8)
+      {
+        displayCharacter(dspl, R1D1_COL, R1D1_ROW);
+      }
+      else if (rlwd == 7)
+      {
+        if (signValue)
+        {
+          r1sPlus = true;
+          if (!r1sMinus)
+          {
+            displayPlus(R1S_COL, R1S_ROW);
+          }
+        }
+        else
+        {
+          r1sPlus = false;
+          if (!r1sMinus)
+          {
+            displayBlank(R1S_COL, R1S_ROW);
+          }
+        }
+        displayCharacter(dsph, R1D2_COL, R1D2_ROW);
+        displayCharacter(dspl, R1D3_COL, R1D3_ROW);
+      }
+      else if (rlwd == 6)
+      {
+        if (signValue)
+        {
+          r1sMinus = true;
+          if (!r1sPlus)
+          {
+            displayMinus(R1S_COL, R1S_ROW);
+          }
+        }
+        else
+        {
+          r1sMinus = false;
+          if (!r1sPlus)
+          {
+            displayBlank(R1S_COL, R1S_ROW);
+          }
+        }
+        displayCharacter(dsph, R1D4_COL, R1D4_ROW);
+        displayCharacter(dspl, R1D5_COL, R1D5_ROW);
+      }
+      else if (rlwd == 5)
+      {
+        if (signValue)
+        {
+          r2sPlus = true;
+          if (!r2sMinus)
+          {
+            displayPlus(R2S_COL, R2S_ROW);
+          }
+        }
+        else
+        {
+          r2sPlus = false;
+          if (!r2sMinus)
+          {
+            displayBlank(R2S_COL, R2S_ROW);
+          }
+        }
+        displayCharacter(dsph, R2D1_COL, R2D1_ROW);
+        displayCharacter(dspl, R2D2_COL, R2D2_ROW);
+      }
+      else if (rlwd == 4)
+      {
+        if (signValue)
+        {
+          r2sMinus = true;
+          if (!r2sPlus)
+          {
+            displayMinus(R2S_COL, R2S_ROW);
+          }
+        }
+        else
+        {
+          r2sMinus = false;
+          if (!r2sPlus)
+          {
+            displayBlank(R2S_COL, R2S_ROW);
+          }
+        }
+        displayCharacter(dsph, R2D3_COL, R2D3_ROW);
+        displayCharacter(dspl, R2D4_COL, R2D4_ROW);
+      }
+      else if (rlwd == 3)
+      {
+        displayCharacter(dsph, R2D5_COL, R2D5_ROW);
+        displayCharacter(dspl, R3D1_COL, R3D1_ROW);
+      }
+      else if (rlwd == 2)
+      {
+        if (signValue)
+        {
+          r3sPlus = true;
+          if (!r3sMinus)
+          {
+            displayPlus(R3S_COL, R3S_ROW);
+          }
+        }
+        else
+        {
+          r3sPlus = false;
+          if (!r3sMinus)
+          {
+            displayBlank(R3S_COL, R3S_ROW);
+          }
+        }
+        displayCharacter(dsph, R3D2_COL, R3D2_ROW);
+        displayCharacter(dspl, R3D3_COL, R3D3_ROW);
+      }
+      else if (rlwd == 1)
+      {
+        if (signValue)
+        {
+          r3sMinus = true;
+          if (!r3sPlus)
+          {
+            displayMinus(R3S_COL, R3S_ROW);
+          }
+        }
+        else
+        {
+          r3sMinus = false;
+          if (!r3sPlus)
+          {
+            displayBlank(R3S_COL, R3S_ROW);
+          }
+        }
+        displayCharacter(dsph, R3D4_COL, R3D4_ROW);
+        displayCharacter(dspl, R3D5_COL, R3D5_ROW);
+      }
     }
 
     // Process the COMP ACTY command.
-    else if (command == "27")
+    else if (command == "4")
     {
       if (data == "0")
       {
@@ -391,6 +412,26 @@ void loop()
         displayCompActy(true);
       }
     }
+
+    // Process Flash Verb/Noun command.
+    else if (command = "5")
+    {
+      if (data == "0")
+      {
+        displayCharacter(0, VD1_COL, VD1_ROW);
+        displayCharacter(0, VD2_COL, VD2_ROW);
+        displayCharacter(0, ND1_COL, ND1_ROW);
+        displayCharacter(0, ND2_COL, ND2_ROW);
+      }
+      else 
+      {
+        displayCharacter(vd1, VD1_COL, VD1_ROW);
+        displayCharacter(vd2, VD2_COL, VD2_ROW);
+        displayCharacter(nd1, ND1_COL, ND1_ROW);
+        displayCharacter(nd2, ND2_COL, ND2_ROW);
+      }
+    }
+
     commandString = "";
   }
 }
@@ -464,10 +505,10 @@ void displayCompActy(bool state)
  * Display the character based on home position (upper left corner).  There are two triangles used
  * to draw each segment.  The first one draws from UL, LL & LR.  The second one draws from UL, UR & LR.
  */
- void displayCharacter(String number, int x, int y)
+ void displayCharacter(byte number, int x, int y)
  {
   // Display based on character to display.
-  if (number.equals("B"))
+  if (number == 0x00) // Blank
   {
     drawSegmentA(x, y, BLACK);
     drawSegmentB(x, y, BLACK);
@@ -477,7 +518,7 @@ void displayCompActy(bool state)
     drawSegmentF(x, y, BLACK);
     drawSegmentG(x, y, BLACK);
   }
-  else if (number.equals("0"))
+  else if (number == 0x15) // 0
   {
     drawSegmentA(x, y, GREEN);
     drawSegmentB(x, y, GREEN);
@@ -487,7 +528,7 @@ void displayCompActy(bool state)
     drawSegmentF(x, y, GREEN);
     drawSegmentG(x, y, BLACK);
   }
-  else if (number.equals("1"))
+  else if (number == 0x03) // 1
   {
     drawSegmentA(x, y, BLACK);
     drawSegmentB(x, y, GREEN);
@@ -497,7 +538,7 @@ void displayCompActy(bool state)
     drawSegmentF(x, y, BLACK);
     drawSegmentG(x, y, BLACK);
   }
-  else if (number.equals("2"))
+  else if (number == 0x19) // 2
   {
     drawSegmentA(x, y, GREEN);
     drawSegmentB(x, y, GREEN);
@@ -507,7 +548,7 @@ void displayCompActy(bool state)
     drawSegmentF(x, y, BLACK);
     drawSegmentG(x, y, GREEN);
   }
-  else if (number.equals("3"))
+  else if (number == 0x1B) // 3
   {
     drawSegmentA(x, y, GREEN);
     drawSegmentB(x, y, GREEN);
@@ -517,7 +558,7 @@ void displayCompActy(bool state)
     drawSegmentF(x, y, BLACK);
     drawSegmentG(x, y, GREEN);
   }
-  else if (number.equals("4"))
+  else if (number == 0x0F) // 4
   {
     drawSegmentA(x, y, BLACK);
     drawSegmentB(x, y, GREEN);
@@ -527,7 +568,7 @@ void displayCompActy(bool state)
     drawSegmentF(x, y, GREEN);
     drawSegmentG(x, y, GREEN);
   }
-  else if (number.equals("5"))
+  else if (number == 0x1E) // 5
   {
     drawSegmentA(x, y, GREEN);
     drawSegmentB(x, y, BLACK);
@@ -537,7 +578,7 @@ void displayCompActy(bool state)
     drawSegmentF(x, y, GREEN);
     drawSegmentG(x, y, GREEN);
   }
-  else if (number.equals("6"))
+  else if (number == 0x1C) // 6
   {
     drawSegmentA(x, y, GREEN);
     drawSegmentB(x, y, BLACK);
@@ -547,7 +588,7 @@ void displayCompActy(bool state)
     drawSegmentF(x, y, GREEN);
     drawSegmentG(x, y, GREEN);
   }
-  else if (number.equals("7"))
+  else if (number == 0x13) // 7
   {
     drawSegmentA(x, y, GREEN);
     drawSegmentB(x, y, GREEN);
@@ -557,7 +598,7 @@ void displayCompActy(bool state)
     drawSegmentF(x, y, BLACK);
     drawSegmentG(x, y, BLACK);
   }
-  else if (number.equals("8"))
+  else if (number == 0x1D) // 8
   {
     drawSegmentA(x, y, GREEN);
     drawSegmentB(x, y, GREEN);
@@ -567,7 +608,7 @@ void displayCompActy(bool state)
     drawSegmentF(x, y, GREEN);
     drawSegmentG(x, y, GREEN);
   }
-  else if (number.equals("9"))
+  else if (number == 0x1F) // 9
   {
     drawSegmentA(x, y, GREEN);
     drawSegmentB(x, y, GREEN);
@@ -679,26 +720,6 @@ void drawSegmentG (int x, int y, int color)
   tft.fillTriangle (x + CHAR_OFFSET + CHAR_BAR_WIDTH - 4, y + 31,
                     x + CHAR_WIDTH - CHAR_BAR_WIDTH + 6, y + 31, 
                     x + CHAR_WIDTH - CHAR_BAR_WIDTH + 4, y + 39, color);
-}
-
-/*
- * Display the sign based on home position (upper left corner).  Sign values: 0 = blank,
- * 1 = minus, 2 = plus.
- */
-void displaySign (String sign, int x, int y)
-{
-  if (sign.equals("2"))
-  {
-    displayPlus(x, y);
-  }
-  else if (sign.equals("1"))
-  {
-    displayMinus(x, y);
-  }
-  else if (sign.equals("0"))
-  {
-    displayBlank(x, y);
-  }
 }
 
 /*

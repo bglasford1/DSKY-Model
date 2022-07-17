@@ -27,7 +27,7 @@ const byte TOTAL_KEYS = ROWS * COLS;
 char lastKeySetting [(TOTAL_KEYS + CHAR_BIT - 1) / CHAR_BIT];  // one bit each, 0 = up, 1 = down
 unsigned long lastKeyTime[TOTAL_KEYS];
 const unsigned long DEBOUNCE_TIME = 10; // In milliseconds
-const bool DEBUGGING = true;
+const bool DEBUGGING = false;
 
 // The row and column pin assignments.
 const byte rowPins [ROWS] = {9, 10, 11};
