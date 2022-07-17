@@ -47,19 +47,19 @@ public class AGCTestInterface
     displayInterface.setChannel10Register(0x43BD); // 100 0011 1011 1101
     displayInterface.decodeData();
 
-    // R1D2/R1D3
+    // R1D2/R1D3/+R1S
     displayInterface.setChannel10Register(0x3BBD); // 011 1011 1011 1101
     displayInterface.decodeData();
 
-    // R1D4/R1D5
+    // R1D4/R1D5/-R1S
     displayInterface.setChannel10Register(0x33BD); // 011 0011 1011 1101
     displayInterface.decodeData();
 
-    // R2D1/R2D2
+    // R2D1/R2D2/+R2S
     displayInterface.setChannel10Register(0x2BBD); // 010 1011 1011 1101
     displayInterface.decodeData();
 
-    // R2D3/R2D4
+    // R2D3/R2D4/-R2S
     displayInterface.setChannel10Register(0x23BD); // 010 0011 1011 1101
     displayInterface.decodeData();
 
@@ -67,66 +67,65 @@ public class AGCTestInterface
     displayInterface.setChannel10Register(0x1BBD); // 001 1011 1011 1101
     displayInterface.decodeData();
 
-    // R3D2/R3D3
+    // R3D2/R3D3/+R3S
     displayInterface.setChannel10Register(0x13BD); // 001 0011 1011 1101
     displayInterface.decodeData();
 
-    // R3D4/R3D5
+    // R3D4/R3D5/-R3S
     displayInterface.setChannel10Register(0x0BBD); // 000 1011 1011 1101
     displayInterface.decodeData();
 
     long endTime = System.currentTimeMillis();
     System.out.println("Time to Draw Display = " + (endTime - startTime));
 
-      // -------------- Put the +/- signs through their paces -----------------
-      // R1D2/R1D3/+R1S
-      displayInterface.resetSigns();
-      displayInterface.setChannel10Register(0x3FBD); // 011 1111 1011 1101
-      displayInterface.decodeData();
+    // -------------- Put the +/- signs through their paces -----------------
+    // R1D2/R1D3/+R1S
+    displayInterface.setChannel10Register(0x3FBD); // 011 1111 1011 1101
+    displayInterface.decodeData();
 
-      // R2D1/R2D2/+R2S
-      displayInterface.setChannel10Register(0x2FBD); // 010 1111 1011 1101
-      displayInterface.decodeData();
+    // R2D1/R2D2/+R2S
+    displayInterface.setChannel10Register(0x2FBD); // 010 1111 1011 1101
+    displayInterface.decodeData();
 
-      // R3D2/R3D3/+R3S
-      displayInterface.setChannel10Register(0x17BD); // 001 0111 1011 1101
-      displayInterface.decodeData();
+    // R3D2/R3D3/+R3S
+    displayInterface.setChannel10Register(0x17BD); // 001 0111 1011 1101
+    displayInterface.decodeData();
 
-      // R1D2/R1D3/+R1S
-      displayInterface.setChannel10Register(0x3BBD); // 011 1011 1011 1101
-      displayInterface.decodeData();
+    // R1D2/R1D3/+R1S
+    displayInterface.setChannel10Register(0x3BBD); // 011 1011 1011 1101
+    displayInterface.decodeData();
 
-      // R2D1/R2D2/+R2S
-      displayInterface.setChannel10Register(0x2BBD); // 010 1011 1011 1101
-      displayInterface.decodeData();
+    // R2D1/R2D2/+R2S
+    displayInterface.setChannel10Register(0x2BBD); // 010 1011 1011 1101
+    displayInterface.decodeData();
 
-      // R3D2/R3D3/+R3S
-      displayInterface.setChannel10Register(0x13BD); // 001 0011 1011 1101
-      displayInterface.decodeData();
+    // R3D2/R3D3/+R3S
+    displayInterface.setChannel10Register(0x13BD); // 001 0011 1011 1101
+    displayInterface.decodeData();
 
-      // R1D4/R1D5/-R1S
-      displayInterface.setChannel10Register(0x37BD); // 011 0111 1011 1101
-      displayInterface.decodeData();
+    // R1D4/R1D5/-R1S
+    displayInterface.setChannel10Register(0x37BD); // 011 0111 1011 1101
+    displayInterface.decodeData();
 
-      // R2D3/R2D4/-R2S
-      displayInterface.setChannel10Register(0x27BD); // 010 0111 1011 1101
-      displayInterface.decodeData();
+    // R2D3/R2D4/-R2S
+    displayInterface.setChannel10Register(0x27BD); // 010 0111 1011 1101
+    displayInterface.decodeData();
 
-      // R3D4/R3D5/-R3S
-      displayInterface.setChannel10Register(0x0FBD); // 000 1111 1011 1101
-      displayInterface.decodeData();
+    // R3D4/R3D5/-R3S
+    displayInterface.setChannel10Register(0x0FBD); // 000 1111 1011 1101
+    displayInterface.decodeData();
 
-      // R1D4/R1D5/-R1S
-      displayInterface.setChannel10Register(0x33BD); // 011 0011 1011 1101
-      displayInterface.decodeData();
+    // R1D4/R1D5/-R1S
+    displayInterface.setChannel10Register(0x33BD); // 011 0011 1011 1101
+    displayInterface.decodeData();
 
-      // R2D3/R2D4/-R2S
-      displayInterface.setChannel10Register(0x23BD); // 010 0011 1011 1101
-      displayInterface.decodeData();
+    // R2D3/R2D4/-R2S
+    displayInterface.setChannel10Register(0x23BD); // 010 0011 1011 1101
+    displayInterface.decodeData();
 
-      // R3D4/R3D5/-R3S
-      displayInterface.setChannel10Register(0x0BBD); // 000 1011 1011 1101
-      displayInterface.decodeData();
+    // R3D4/R3D5/-R3S
+    displayInterface.setChannel10Register(0x0BBD); // 000 1011 1011 1101
+    displayInterface.decodeData();
 
 //      // ---------------- Make R1 count from 0-9 -------------------
 //      // Set R1 to all zeros.
@@ -301,6 +300,6 @@ public class AGCTestInterface
   {
     System.out.println("Keyboard Strobe asserted.");
     BitSet data = keyboardInterface.getChannnel15Data();
-    System.out.println("Key Pressed = " + data.toString());
+    System.out.println("Key Pressed = " + data.toLongArray()[0]);
   }
 }

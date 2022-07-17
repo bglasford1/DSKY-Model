@@ -13,6 +13,7 @@
             state of the given indicator changes.
 
   Mods:		  07/15/22  Initial Release.
+            07/16/22  Performance improvements.
 */
 import java.util.BitSet;
 
@@ -83,7 +84,7 @@ public class IndicatorInterface
    */
   public void setCompActy(boolean value)
   {
-    serialInterface.sendDisplayCommand(DisplayCommand.COMP_ACTY, value ? 1 : 0);
+    serialInterface.sendCompActy(value);
   }
 
   /**
@@ -193,6 +194,9 @@ public class IndicatorInterface
     }
   }
 
+  /**
+   * Method to send the "other" indicators associated with the Channel 11 bits.
+   */
   public void sendOtherIndidatorsCommand()
   {
     serialInterface.sendOtherIndicatorsCommand(Utils.toInt(otherIndicatorBits));
@@ -288,6 +292,9 @@ public class IndicatorInterface
     }
   }
 
+  /**
+   * Method to send the display indicators associated with Channel 10, relay word 12 bits.
+   */
   public void sendDisplayIndicatorsCommand()
   {
     serialInterface.sendDisplayIndicatorsCommand(Utils.toInt(displayIndicatorBits));

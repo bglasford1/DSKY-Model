@@ -31,37 +31,33 @@ public class DSKY
     AGCTestInterface AGCTestInterface = null;
     SimInterface simInterface = null;
 
-    Mode mode = Mode.HWSIM;
+    Mode mode;
 
     SerialInterface serialInterface = SerialInterface.getInstance();
     serialInterface.initInterface();
 
     // Input is based on args.  By default run with the hardware simulator.
-    if (args[0].equalsIgnoreCase("--AGC"))
-    {
-      mode = Mode.AGC;
-      agcInterface = new AGCInterface();
-      agcInterface.init();
-    }
-    else if (args[0].equalsIgnoreCase("--AGC-TEST"))
+    if (args[0].equalsIgnoreCase("--TEST"))
     {
       mode = Mode.TEST;
       AGCTestInterface = new AGCTestInterface();
       AGCTestInterface.init();
     }
-    else if (args[0].equalsIgnoreCase("--AGC-SWSIM"))
+    else
     {
-      mode = Mode.SWSIM;
-      simInterface = new SimInterface();
-      simInterface.initInterface();
-      simInterface.start();
-    }
-    else // Run with hardware simulator.
-    {
-      mode = Mode.HWSIM;
-      simInterface = new SimInterface();
-      simInterface.initInterface();
-      simInterface.start();
+//      agcInterface = new AGCInterface();
+//      agcInterface.init();
+//      if (agcInterface.isHwPresent())
+//      {
+//        mode = Mode.AGC;
+//      }
+//      else
+//      {
+        mode = Mode.SWSIM;
+        simInterface = new SimInterface();
+        simInterface.initInterface();
+        simInterface.start();
+//      }
     }
 
     KeyboardInterface keyboardInterface = KeyboardInterface.getInstance();

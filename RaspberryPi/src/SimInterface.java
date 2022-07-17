@@ -11,6 +11,7 @@
             have the same interface for ease of coding.
 
   Mods:		  07/15/22  Initial Release.
+            07/16/22  Performance improvements.
 */
 public class SimInterface extends Thread
 {
@@ -126,8 +127,8 @@ public class SimInterface extends Thread
           if (!(pValue == 8 && dValue == 0))
           {
             System.out.print("Received: Channel = " + Integer.toOctalString(pValue) + ", D = " + dValue);
-            System.out.println(", Original Bytes: " + byteToHex(data[i-3]) + " " + byteToHex(data[i-2]) +
-                               " " + byteToHex(data[i-1]) + " " + byteToHex(data[i]));
+            System.out.println(", Original Bytes: " + Utils.byteToHex(data[i-3]) + " " + Utils.byteToHex(data[i-2]) +
+                               " " + Utils.byteToHex(data[i-1]) + " " + Utils.byteToHex(data[i]));
           }
 
           // Process Channel 11 - indicator status.
@@ -138,6 +139,7 @@ public class SimInterface extends Thread
             indicatorInterface.setTemp((dValue & 0x0008) != 0);
             indicatorInterface.setKeyRel((dValue & 0x0010) != 0);
             indicatorInterface.setOprErr((dValue & 0x0040) != 0);
+            indicatorInterface.sendOtherIndidatorsCommand();
           }
           // Process Channel 10 - display data.
           else if (pValue == 8)
@@ -157,6 +159,7 @@ public class SimInterface extends Thread
             indicatorInterface.setOprErr((dValue & 0x0040) != 0);
             indicatorInterface.setRestart((dValue & 0x0080) != 0);
             indicatorInterface.setStandby((dValue & 0x0100) != 0);
+            indicatorInterface.sendOtherIndidatorsCommand();
           }
         }
         index = 0;
@@ -164,15 +167,6 @@ public class SimInterface extends Thread
         dValue = 0;
       }
     }
-  }
-
-  // TODO: temp for debug purposes <-- REMOVE
-  private String byteToHex(byte num)
-  {
-    char[] hexDigits = new char[2];
-    hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
-    hexDigits[1] = Character.forDigit((num & 0xF), 16);
-    return new String(hexDigits);
   }
 
   /**

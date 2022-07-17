@@ -30,6 +30,7 @@ import java.util.BitSet;
  *   The AGC interface uses the following pins:
  *
  *   Assignment		  GPIO Pin
+ *   H/W Present        2
  *   Channel Bus 1			4
  *   Channel Bus 2			5
  *   Channel Bus 3			6
@@ -57,6 +58,7 @@ import java.util.BitSet;
  */
 public class AGCInterface
 {
+  private static final Pin HW_PRESENT = RaspiPin.GPIO_02;
   private static final Pin CH1_PIN = RaspiPin.GPIO_04;
   private static final Pin CH2_PIN = RaspiPin.GPIO_05;
   private static final Pin CH3_PIN = RaspiPin.GPIO_06;
@@ -92,6 +94,7 @@ public class AGCInterface
   private GpioPinDigitalInput rpro;
   private GpioPinDigitalOutput kb_str;
   private GpioPinDigitalInput paralm;
+  private GpioPinDigitalInput hwPresent;
 
   private GpioPinDigitalMultipurpose channelBit1;
   private GpioPinDigitalMultipurpose channelBit2;
@@ -143,6 +146,7 @@ public class AGCInterface
     rpro = gpio.provisionDigitalInputPin(RPRO_PIN);
     kb_str = gpio.provisionDigitalOutputPin(KB_STR_PIN, PinState.LOW);
     paralm = gpio.provisionDigitalInputPin(PARALM_PIN);
+    hwPresent = gpio.provisionDigitalInputPin(HW_PRESENT, PinPullResistance.PULL_DOWN);
 
     // Create a CLK1 listener.
     clk1.addListener((GpioPinListenerDigital) event ->
@@ -157,21 +161,22 @@ public class AGCInterface
 
       // Read Channel bus and send data to DisplayInterface.
       // Note: The Channel bus should be set to input unless a write is occurring.
-      displayInterface.setChannel10Bit(1, channelBit1.getState().isHigh());
-      displayInterface.setChannel10Bit(2, channelBit2.getState().isHigh());
-      displayInterface.setChannel10Bit(3, channelBit3.getState().isHigh());
-      displayInterface.setChannel10Bit(4, channelBit4.getState().isHigh());
-      displayInterface.setChannel10Bit(5, channelBit5.getState().isHigh());
-      displayInterface.setChannel10Bit(6, channelBit6.getState().isHigh());
-      displayInterface.setChannel10Bit(7, channelBit7.getState().isHigh());
-      displayInterface.setChannel10Bit(8, channelBit8.getState().isHigh());
-      displayInterface.setChannel10Bit(9, channelBit9.getState().isHigh());
-      displayInterface.setChannel10Bit(10, channelBit10.getState().isHigh());
-      displayInterface.setChannel10Bit(11, channelBit11.getState().isHigh());
-      displayInterface.setChannel10Bit(12, channelBit12.getState().isHigh());
-      displayInterface.setChannel10Bit(13, channelBit13.getState().isHigh());
-      displayInterface.setChannel10Bit(14, channelBit14.getState().isHigh());
-      displayInterface.setChannel10Bit(15, channelBit15.getState().isHigh());
+      // Note: The AGC numbers bits starting at one.  Java starts with zero.
+      displayInterface.setChannel10Bit(0, channelBit1.getState().isHigh());
+      displayInterface.setChannel10Bit(1, channelBit2.getState().isHigh());
+      displayInterface.setChannel10Bit(2, channelBit3.getState().isHigh());
+      displayInterface.setChannel10Bit(3, channelBit4.getState().isHigh());
+      displayInterface.setChannel10Bit(4, channelBit5.getState().isHigh());
+      displayInterface.setChannel10Bit(5, channelBit6.getState().isHigh());
+      displayInterface.setChannel10Bit(6, channelBit7.getState().isHigh());
+      displayInterface.setChannel10Bit(7, channelBit8.getState().isHigh());
+      displayInterface.setChannel10Bit(8, channelBit9.getState().isHigh());
+      displayInterface.setChannel10Bit(9, channelBit10.getState().isHigh());
+      displayInterface.setChannel10Bit(10, channelBit11.getState().isHigh());
+      displayInterface.setChannel10Bit(11, channelBit12.getState().isHigh());
+      displayInterface.setChannel10Bit(12, channelBit13.getState().isHigh());
+      displayInterface.setChannel10Bit(13, channelBit14.getState().isHigh());
+      displayInterface.setChannel10Bit(14, channelBit15.getState().isHigh());
 
       displayInterface.decodeData();
     });
@@ -242,6 +247,19 @@ public class AGCInterface
         channelBit14.setState(false);
       }
     });
+  }
+
+  /**
+   * Method to check to see if the AGC hardware or simulator are present.
+   * Note that the internal pull-up resistor is set to pull the line low
+   * so hardware is present if the line goes high.
+   *
+   * @return Whether or not the hardware is present.
+   */
+  public boolean isHwPresent()
+  {
+    return false;
+//    return hwPresent.getState().isHigh();
   }
 
   public void assertKbStr()

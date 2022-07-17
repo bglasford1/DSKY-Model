@@ -13,6 +13,7 @@
             port.  All direct interfacing to the Arduinos is encapsulated within this class.
 
   Mods:		  07/15/22  Initial Release.
+            07/16/22  Performance improvements.
 */
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
@@ -31,11 +32,6 @@ public class SerialInterface
   private SerialPort keyboardPort = null;
   private SerialPort indicatorsPort = null;
   private SerialPort displayPort = null;
-
-  private int vd1 = 0;
-  private int vd2 = 0;
-  private int nd1 = 0;
-  private int nd2 = 0;
 
   private SerialInterface() { }
 
@@ -188,160 +184,64 @@ public class SerialInterface
   }
 
   /**
-   * Method called to send a display command to the display Arduino.
-   * For numbers, the format is command number followed by the actual number, all in ASCII. Ex: "4 1"
-   * For signs, the format is same as above except value is -1 = blank, 0 = plus, 1 = minus.
-   * For Comp Acty light, 0 = off, 1 = on.
-   *
-   * @param command The display command to send.
-   * @param value The optional data value to send along with the command.
+   * Method to send a RESET command.  There are no associated values.
    */
-  public void sendDisplayCommand(DisplayCommand command, int value)
+  public void sendReset()
   {
-    byte[] commandToSend = null;
+    try
+    {
+      byte[] commandToSend = new byte[] { 49 };
+      displayPort.writeBytes(commandToSend, commandToSend.length);
+      Thread.sleep(100);
+    }
+    catch (InterruptedException e)
+    {
+      e.printStackTrace();
+    }
+  }
 
-    // If value = -1 then send a value of 66 or 'B'.
-    int convertedValue = 66;
-    if (value != -1)
+  /**
+   * Method to set/clear the COMP ACTY indicator. 0 = off, 1 = on
+   *
+   * @param value The value of the indicator.
+   */
+  public void sendCompActy(boolean value)
+  {
+    try
     {
-      convertedValue = 48 + value;
+      byte[] commandToSend;
+      if (value)
+        commandToSend = new byte[] { 52, 32, 49 };
+      else
+        commandToSend = new byte[] { 52, 32, 48 };
+      displayPort.writeBytes(commandToSend, commandToSend.length);
+      Thread.sleep(100);
     }
+    catch (InterruptedException e)
+    {
+      e.printStackTrace();
+    }
+  }
 
-    // Convert command to ASCII number.
-    if (command == DisplayCommand.RESET)
-    {
-      commandToSend = new byte[] { 49 };
-    }
-    else if (command == DisplayCommand.MD1)
-    {
-      commandToSend = new byte[] { 51, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.MD2)
-    {
-      commandToSend = new byte[] { 52, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.VD1)
-    {
-      commandToSend = new byte[] { 53, 32, (byte)(convertedValue) };
-      vd1 = convertedValue;
-    }
-    else if (command == DisplayCommand.VD2)
-    {
-      commandToSend = new byte[] { 54, 32, (byte)(convertedValue) };
-      vd2 = convertedValue;
-    }
-    else if (command == DisplayCommand.ND1)
-    {
-      commandToSend = new byte[] { 55, 32, (byte)(convertedValue) };
-      nd1 = convertedValue;
-    }
-    else if (command == DisplayCommand.ND2)
-    {
-      commandToSend = new byte[] { 56, 32, (byte)(convertedValue) };
-      nd2 = convertedValue;
-    }
-    else if (command == DisplayCommand.R1S)
-    {
-      commandToSend = new byte[] { 57, 32, 0 };
-      if (value == 0)
-        commandToSend[2] = 48;
-      else if (value == 1)
-        commandToSend[2] = 49;
-      else if (value == 2)
-        commandToSend[2] = 50;
-    }
-    else if (command == DisplayCommand.R1D1)
-    {
-      commandToSend = new byte[] { 49, 48, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R1D2)
-    {
-      commandToSend = new byte[] { 49, 49, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R1D3)
-    {
-      commandToSend = new byte[] { 49, 50, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R1D4)
-    {
-      commandToSend = new byte[] { 49, 51, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R1D5)
-    {
-      commandToSend = new byte[] { 49, 52, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R2S)
-    {
-      commandToSend = new byte[] { 49, 53, 32, 0 };
-      if (value == 0)
-        commandToSend[3] = 48;
-      else if (value == 1)
-        commandToSend[3] = 49;
-      else if (value == 2)
-        commandToSend[3] = 50;
-    }
-    else if (command == DisplayCommand.R2D1)
-    {
-      commandToSend = new byte[] { 49, 54, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R2D2)
-    {
-      commandToSend = new byte[] { 49, 55, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R2D3)
-    {
-      commandToSend = new byte[] { 49, 56, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R2D4)
-    {
-      commandToSend = new byte[] { 49, 57, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R2D5)
-    {
-      commandToSend = new byte[] { 50, 48, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R3S)
-    {
-      commandToSend = new byte[] { 50, 49, 32, 0 };
-      if (value == 0)
-        commandToSend[3] = 48;
-      else if (value == 1)
-        commandToSend[3] = 49;
-      else if (value == 2)
-        commandToSend[3] = 50;
-    }
-    else if (command == DisplayCommand.R3D1)
-    {
-      commandToSend = new byte[] { 50, 50, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R3D2)
-    {
-      commandToSend = new byte[] { 50, 51, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R3D3)
-    {
-      commandToSend = new byte[] { 50, 52, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R3D4)
-    {
-      commandToSend = new byte[] { 50, 53, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.R3D5)
-    {
-      commandToSend = new byte[] { 50, 54, 32, (byte)(convertedValue) };
-    }
-    else if (command == DisplayCommand.COMP_ACTY)
-    {
-      commandToSend = new byte[] { 50, 55, 32, (byte)(convertedValue) };
-    }
+  /**
+   * Method called to send a display command to the display Arduino.  The
+   * entire 15 bit channel value is sent.  The format for this value is
+   * xRRR RSHH HHHL LLLL where L = DSPL, H = DSPH, S = sign bit, R = relay
+   * word and x = don't care.
+   *
+   * @param value The integer value to send.
+   */
+  public void sendDisplayCommand(int value)
+  {
+    byte[] commandToSend = new byte[] { 51, 32, 32, 32, 32, 32, 32 };
+    String valueString = String.valueOf(value);
+    byte[] valueBytes = valueString.getBytes(StandardCharsets.UTF_8);
+    System.arraycopy(valueBytes, 0, commandToSend, 2, valueBytes.length);
 
     try
     {
-      if (commandToSend != null)
-      {
-        displayPort.writeBytes(commandToSend, commandToSend.length);
-        Thread.sleep(100);
-      }
+      displayPort.writeBytes(commandToSend, commandToSend.length);
+      Thread.sleep(100);
     }
     catch (InterruptedException e)
     {
@@ -390,6 +290,7 @@ public class SerialInterface
       commandToSend[2+i] = valueBytes[i];
     }
     sendCommand(commandToSend);
+
     try
     {
       Thread.sleep(100);
@@ -398,121 +299,6 @@ public class SerialInterface
     {
       e.printStackTrace();
     }
-  }
-
-  /**
-   * Method called to send a command to the indicator panel.
-   *
-   * @param command The command to send.
-   * @param value The optional data value to send along with the command.
-   */
-  public void sendIndicatorCommand(IndicatorCommand command, boolean value)
-  {
-    byte[] commandToSend = null;
-
-    // Convert command to ASCII number.
-    if (command == IndicatorCommand.RESET)
-    {
-      commandToSend = new byte[] { 49 };
-    }
-    else if (command == IndicatorCommand.UPLINK_ACTY)
-    {
-      commandToSend = new byte[] { 51, 32, 0 };
-      if (value)
-        commandToSend[2] = 49;
-      else
-        commandToSend[2] = 48;
-    }
-    else if (command == IndicatorCommand.NO_ATT)
-    {
-      commandToSend = new byte[] { 52, 32, 0 };
-      if (value)
-        commandToSend[2] = 49;
-      else
-        commandToSend[2] = 48;
-    }
-    else if (command == IndicatorCommand.STBY)
-    {
-      commandToSend = new byte[] { 53, 32, 0 };
-      if (value)
-        commandToSend[2] = 49;
-      else
-        commandToSend[2] = 48;
-    }
-    else if (command == IndicatorCommand.KEY_REL)
-    {
-      commandToSend = new byte[] { 54, 32, 0 };
-      if (value)
-        commandToSend[2] = 49;
-      else
-        commandToSend[2] = 48;
-    }
-    else if (command == IndicatorCommand.OPR_ERR)
-    {
-      commandToSend = new byte[] { 55, 32, 0 };
-      if (value)
-        commandToSend[2] = 49;
-      else
-        commandToSend[2] = 48;
-    }
-    else if (command == IndicatorCommand.TEMP)
-    {
-      commandToSend = new byte[] { 56, 32, 0 };
-      if (value)
-        commandToSend[2] = 49;
-      else
-        commandToSend[2] = 48;
-    }
-    else if (command == IndicatorCommand.GIMBAL_LOCK)
-    {
-      commandToSend = new byte[] { 57, 32, 0 };
-      if (value)
-        commandToSend[2] = 49;
-      else
-        commandToSend[2] = 48;
-    }
-    else if (command == IndicatorCommand.PROG)
-    {
-      commandToSend = new byte[] { 49, 48, 32, 0 };
-      if (value)
-        commandToSend[3] = 49;
-      else
-        commandToSend[3] = 48;
-    }
-    else if (command == IndicatorCommand.RESTART)
-    {
-      commandToSend = new byte[] { 49, 49, 32, 0 };
-      if (value)
-        commandToSend[3] = 49;
-      else
-        commandToSend[3] = 48;
-    }
-    else if (command == IndicatorCommand.TRACKER)
-    {
-      commandToSend = new byte[] { 49, 50, 32, 0 };
-      if (value)
-        commandToSend[3] = 49;
-      else
-        commandToSend[3] = 48;
-    }
-    else if (command == IndicatorCommand.ALT)
-    {
-      commandToSend = new byte[] { 49, 51, 32, 0 };
-      if (value)
-        commandToSend[3] = 49;
-      else
-        commandToSend[3] = 48;
-    }
-    else if (command == IndicatorCommand.VEL)
-    {
-      commandToSend = new byte[] { 49, 52, 32, 0 };
-      if (value)
-        commandToSend[3] = 49;
-      else
-        commandToSend[3] = 48;
-    }
-
-    sendCommand(commandToSend);
   }
 
   /**
@@ -525,32 +311,29 @@ public class SerialInterface
     byte[] commandToSend;
     if (state)
     {
-      System.out.println("Flash V/N: Turn on........");
-      // Set the four digits to saved values.
-      commandToSend = new byte[] { 53, 32, (byte)vd1 };
-      sendCommand(commandToSend);
-      commandToSend = new byte[] { 54, 32, (byte)vd2 };
-      sendCommand(commandToSend);
-      commandToSend = new byte[] { 55, 32, (byte)nd1 };
-      sendCommand(commandToSend);
-      commandToSend = new byte[] { 56, 32, (byte)nd2 };
-      sendCommand(commandToSend);
+      commandToSend = new byte[] { 53, 32, 49 };
     }
     else
     {
-      System.out.println("Flash V/N: Turn off........");
-      // Blank the four digits.
-      commandToSend = new byte[] { 53, 32, 66 };
-      sendCommand(commandToSend);
-      commandToSend = new byte[] { 54, 32, 66 };
-      sendCommand(commandToSend);
-      commandToSend = new byte[] { 55, 32, 66 };
-      sendCommand(commandToSend);
-      commandToSend = new byte[] { 56, 32, 66 };
-      sendCommand(commandToSend);
+      commandToSend = new byte[] { 53, 32, 48 };
     }
+    try
+    {
+      displayPort.writeBytes(commandToSend, commandToSend.length);
+      Thread.sleep(100);
+    }
+    catch (InterruptedException e)
+    {
+      e.printStackTrace();
+    }
+
   }
 
+  /**
+   * Internal method used to send a command to the indicators Arduino.
+   *
+   * @param command The command to send.
+   */
   private void sendCommand(byte[] command)
   {
     try
